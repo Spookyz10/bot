@@ -3,9 +3,6 @@ const client = new Client({
   intents: [GatewayIntentBits.Guilds],
 });
 
-client.login(process.env.TOKEN);
-
-
 const rarityBaseCosts = {
   Common: 100,
   Uncommon: 110,
@@ -233,4 +230,4 @@ function calculateUpgradeChance(upgradeLevel) {
   return 1;
 }
 
-client.login(token);
+client.login(process.env.TOKEN);

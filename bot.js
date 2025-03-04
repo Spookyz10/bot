@@ -3,7 +3,8 @@ const client = new Client({
   intents: [GatewayIntentBits.Guilds],
 });
 
-const token = 'TOKEN';  // Replace with your bot's token securely (do not hardcode)
+client.login(process.env.TOKEN);
+
 
 const rarityBaseCosts = {
   Common: 100,

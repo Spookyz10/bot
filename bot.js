@@ -35,33 +35,28 @@ function xpNeeded(level) {
 
 client.once('ready', async () => {
   console.log('Bot is online!');
-
-  // Register slash commands
-  await client.application.commands.set([
+  await client.guilds.cache.get('YOUR_GUILD_ID').commands.set([
     new SlashCommandBuilder()
       .setName('calc-pot')
       .setDescription('Calculates the max potential based on base-stat and upgrade')
+      .setDMPermission(false)
       .addNumberOption(option =>
-        option
-          .setName('base-stat')
+        option.setName('base-stat')
           .setDescription('The base stat number (statline)')
           .setRequired(true)
       )
       .addNumberOption(option =>
-        option
-          .setName('upgrade')
+        option.setName('upgrade')
           .setDescription('The upgrade number (final upgrade level)')
           .setRequired(true)
       )
       .addNumberOption(option =>
-        option
-          .setName('curr-upgrade')
+        option.setName('curr-upgrade')
           .setDescription('The current upgrade level')
           .setRequired(false)
       )
       .addStringOption(option =>
-        option
-          .setName('rarity')
+        option.setName('rarity')
           .setDescription('The rarity of the item')
           .setRequired(false)
           .addChoices(
@@ -74,14 +69,14 @@ client.once('ready', async () => {
           )
       )
       .addNumberOption(option =>
-        option
-          .setName('item-level')
+        option.setName('item-level')
           .setDescription('The level of the item')
           .setRequired(false)
       ),
     new SlashCommandBuilder()
       .setName('calc-runs')
       .setDescription('Calculates dungeon runs needed to reach a goal level')
+      .setDMPermission(false)
       .addNumberOption(option =>
         option.setName('current-level')
           .setDescription('Your current level')
@@ -161,12 +156,10 @@ client.on('interactionCreate', async (interaction) => {
       }
     }
 
-    // Send a message that pings the user along with the embed in one reply
     await interaction.reply({
       content: `Hey <@${interaction.user.id}>`,
       embeds: [embed]
     });
-
   }
 
   if (commandName === 'calc-runs') {
@@ -193,41 +186,29 @@ client.on('interactionCreate', async (interaction) => {
       let finalXP = baseXP;
 
       finalXP += Math.floor(baseXP * modifier);
-
       if (vip) finalXP += Math.floor(baseXP * 0.2);
       if (potion) finalXP *= 2;
 
       let runs = Math.ceil(totalXP / finalXP);
+
+      const embed = new EmbedBuilder()
+        .setColor('Purple')
+        .setThumbnail('https://static.wikia.nocookie.net/crusadersroblox/images/1/17/Bot.png/revision/latest?cb=20250304145829&format=original')
+        .setTitle('⚔️ Dungeon Run Calculator ⚔️')
+        .setDescription(`**Total XP Needed:** ${totalXP.toLocaleString()}\n**Runs Needed:** ${runs.toLocaleString()}`)
+        .setFooter({ text: 'Crusaders Dungeon Calculator' })
+        .setTimestamp();
+
+      if (dungeons[selectedDungeon]?.image) {
+        embed.setImage(dungeons[selectedDungeon].image);
+      }
+
+      await interaction.reply({
+        content: `Hey <@${interaction.user.id}>`,
+        embeds: [embed]
+      });
     }
-
-    const embed = new EmbedBuilder()
-      .setColor('Purple')
-      .setThumbnail('https://static.wikia.nocookie.net/crusadersroblox/images/1/17/Bot.png/revision/latest?cb=20250304145829&format=original')
-      .setTitle('⚔️ Dungeon Run Calculator ⚔️')
-      .setDescription(`**Total XP Needed:** ${totalXP.toLocaleString()}\n**Runs Needed:** ${runs.toLocaleString()}`)
-      .setFooter({ text: 'Crusaders Dungeon Calculator' })
-      .setTimestamp();
-
-    if (selectedDungeon && dungeons[selectedDungeon]?.image) {
-      embed.setImage(dungeons[selectedDungeon].image);
-    }
-
-    // Send a message that pings the user along with the embed in one reply
-    await interaction.reply({
-      content: `Hey <@${interaction.user.id}>`,
-      embeds: [embed]
-    });
-
   }
 });
-
-function calculateUpgradeChance(upgradeLevel) {
-  if (upgradeLevel == 1) return 0.95;
-  if (upgradeLevel >= 2 && upgradeLevel <= 19) return 1 - (upgradeLevel - 1) * 0.05;
-  if (upgradeLevel == 20) return 0.08;
-  if (upgradeLevel == 21) return 0.07;
-  if (upgradeLevel == 22) return 0.05;
-  return 1;
-}
 
 client.login(process.env.TOKEN);

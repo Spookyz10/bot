@@ -126,7 +126,10 @@ client.on('interactionCreate', async interaction => {
       .setColor('Purple')
       .setThumbnail('https://static.wikia.nocookie.net/crusadersroblox/images/1/17/Bot.png')
       .setTitle('⚔️ Max Potential ⚔️')
-      .setDescription(`**Max Potential:** ${result}\n**Average Gold Cost:** ${goldCost.toLocaleString()}`)
+      .addFields(
+        { name: '⚔️ Max Potential ⚔️', value: `**${result}**`, inline: false },
+        { name: '💰 Average Gold Cost 💰', value: `**${goldCost.toLocaleString()}**`, inline: false }
+      )
       .setTimestamp();
 
     await interaction.reply({ embeds: [embed] });

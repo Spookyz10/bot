@@ -173,7 +173,7 @@ client.on('interactionCreate', async interaction => {
       if (vip) totalBuff += 20;
       if (potion) totalBuff += 100;
 
-      let finalXP = Math.floor((baseXP * (1 + totalBuff / 100)) * parseFloat(modifierValue));
+      let finalXP = Math.floor((baseXP * (1 + totalBuff / 100)) * ( 1 + parseFloat(modifierValue)));
       
       let runs = Math.ceil(totalXP / finalXP);
       embed.addFields({ name: `${difficulty}`, value: `**${runs}** Runs`, inline: true });

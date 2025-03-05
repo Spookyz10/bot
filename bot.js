@@ -151,7 +151,12 @@ client.on('interactionCreate', async interaction => {
     const embed = new EmbedBuilder()
       .setColor('Purple')
       .setThumbnail('https://static.wikia.nocookie.net/crusadersroblox/images/1/17/Bot.png/revision/latest?cb=20250304145829&format=original')
-      .setTitle(`⚔️ Dungeon Run Calculator ⚔️`)
+      let modifierText = modifier == 0 ? '' : ` with ${interaction.options.getString('modifier')}`;
+      if (vip) modifierText += ` and VIP`;
+      if (potion) modifierText += ` and 2x XP Potion`;
+      modifierText = modifierText.trim().replace(/ and /, ', ').replace(/, ([^,]*)$/, ' and $1');
+      embed.setTitle(`To go from lvl ${currentLevel} to lvl ${goalLevel} in ${dungeon}${modifierText} you need:`)
+
       .setFooter({ text: 'Crusaders Dungeon Calculator' })
       .setTimestamp();
 

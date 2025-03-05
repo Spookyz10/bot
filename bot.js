@@ -151,9 +151,9 @@ client.on('interactionCreate', async interaction => {
     const embed = new EmbedBuilder()
       .setColor('Purple')
       .setThumbnail('https://static.wikia.nocookie.net/crusadersroblox/images/1/17/Bot.png/revision/latest?cb=20250304145829&format=original')
-     let modifierText = '';
+      let modifierText = '';
       let modifierName = interaction.options.getString('modifier');
-      if (modifierName && modifierName !== '0') modifierText = ` with ${modifierName}`;
+      if (modifierName && modifierName !== '0') modifierText = ` with ${modifierName.charAt(0).toUpperCase() + modifierName.slice(1)}`;
       if (vip) modifierText += ` and VIP`;
       if (potion) modifierText += ` and 2x XP Potion`;
 

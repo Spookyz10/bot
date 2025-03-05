@@ -169,9 +169,11 @@ client.on('interactionCreate', async interaction => {
 
     Object.keys(dungeons[dungeon]).filter(d => d !== 'image').forEach(difficulty => {
       let baseXP = dungeons[dungeon][difficulty];
-      let finalXP = baseXP * (1 + parseFloat(modifierValue));
-      if (vip) finalXP *= 1.2;
-      if (potion) finalXP *= 2;
+      let totalBuff = 0;
+      if (vip) totalBuff += 20;
+      if (potion) totalBuff += 100;
+
+      let finalXP = Math.floor((baseXP * (1 + totalBuff / 100)) * (1 + modifier));
 
       let runs = Math.ceil(totalXP / finalXP);
       embed.addFields({ name: `${difficulty}`, value: `**${runs}** Runs`, inline: true });

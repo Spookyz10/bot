@@ -23,7 +23,7 @@ const dungeons = {
     "Normal": 25000,
     "Advanced": 60000,
     "Expert": 90000,
-    "image": 'https://static.wikia.nocookie.net/crusadersroblox/images/1/13/Sunken_Ruins.png/revision/latest?cb=20250304151817&format=original'
+    "image": 'https://static.wikia.nocookie.net/crusadersroblox/images/1/13/Sunken_Ruins.png/revision/latest?cb=20250304151817'
   }
 };
 
@@ -47,11 +47,11 @@ client.once('ready', async () => {
   await client.application.commands.set([
     new SlashCommandBuilder()
       .setName('calc-pot')
-      .setDescription('Calculates the max potential based on base-stat and upgrade')
-      .addNumberOption(option => option.setName('base-stat').setDescription('The base stat number (statline)').setRequired(true))
-      .addNumberOption(option => option.setName('upgrade').setDescription('The upgrade number (final upgrade level)').setRequired(true))
-      .addNumberOption(option => option.setName('curr-upgrade').setDescription('The current upgrade level').setRequired(false))
-      .addStringOption(option => option.setName('rarity').setDescription('The rarity of the item').setRequired(false)
+      .setDescription('Calculates max potential stat based on base-stat and upgrades')
+      .addNumberOption(option => option.setName('base-stat').setDescription('Base stat').setRequired(true))
+      .addNumberOption(option => option.setName('upgrade').setDescription('Upgrade level').setRequired(true))
+      .addNumberOption(option => option.setName('curr-upgrade').setDescription('Current upgrade level').setRequired(false))
+      .addStringOption(option => option.setName('rarity').setDescription('Item rarity').setRequired(false)
         .addChoices(
           { name: 'Common', value: 'Common' },
           { name: 'Uncommon', value: 'Uncommon' },
@@ -60,88 +60,50 @@ client.once('ready', async () => {
           { name: 'Legendary', value: 'Legendary' },
           { name: 'Mythical', value: 'Mythical' }
         ))
-      .addNumberOption(option => option.setName('item-level').setDescription('The level of the item').setRequired(false)),
+      .addNumberOption(option => option.setName('item-level').setDescription('Item level').setRequired(false)),
     new SlashCommandBuilder()
       .setName('calc-runs')
-      .setDescription('Calculates dungeon runs needed to reach a goal level')
-      .addNumberOption(option => option.setName('current-level').setDescription('Your current level').setRequired(true))
-      .addNumberOption(option => option.setName('goal-level').setDescription('Your goal level').setRequired(true))
-      .addStringOption(option => option.setName('dungeon').setDescription('Select a dungeon').setRequired(false)
+      .setDescription('Calculates how many dungeon runs you need')
+      .addNumberOption(option => option.setName('current-level').setDescription('Current level').setRequired(true))
+      .addNumberOption(option => option.setName('goal-level').setDescription('Goal level').setRequired(true))
+      .addStringOption(option => option.setName('dungeon').setDescription('Select dungeon').setRequired(false)
         .addChoices(
           { name: 'Pirate Cove', value: 'Pirate Cove' },
           { name: 'Sunken Ruins', value: 'Sunken Ruins' }
         ))
-      .addStringOption(option => option.setName('difficulty').setDescription('Select dungeon difficulty').setRequired(false)
+      .addStringOption(option => option.setName('difficulty').setDescription('Dungeon difficulty').setRequired(false)
         .addChoices(
           { name: 'Normal', value: 'Normal' },
           { name: 'Advanced', value: 'Advanced' },
           { name: 'Expert', value: 'Expert' }
         ))
-      .addStringOption(option => option.setName('modifier').setDescription('Select a modifier').setRequired(false)
+      .addStringOption(option => option.setName('modifier').setDescription('Modifier').setRequired(false)
         .addChoices(
           { name: 'None', value: '0' },
           { name: 'Nightmare', value: '0.5' },
           { name: 'Chaotic', value: '1' },
           { name: 'Impossible', value: '4' }
         ))
-      .addBooleanOption(option => option.setName('vip').setDescription('Do you have VIP bonus?').setRequired(false))
-      .addBooleanOption(option => option.setName('xp-potion').setDescription('Do you have the 2x XP Potion?').setRequired(false)),
+      .addBooleanOption(option => option.setName('vip').setDescription('VIP bonus').setRequired(false))
+      .addBooleanOption(option => option.setName('xp-potion').setDescription('2x XP Potion').setRequired(false)),
   ]);
 });
 
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isCommand()) return;
-
   const { commandName } = interaction;
-
-  if (commandName === 'calc-pot') {
-    const baseStat = interaction.options.getNumber('base-stat');
-    const upgrade = interaction.options.getNumber('upgrade');
-    const currentUpgrade = interaction.options.getNumber('curr-upgrade');
-    const rarity = interaction.options.getString('rarity');
-    const itemLevel = interaction.options.getNumber('item-level');
-    const statline = baseStat;
-    const result = Math.floor(upgrade + statline + (statline * (upgrade * 0.02)));
-
-    let goldCost = 0;
-    if (rarity && itemLevel) {
-      const baseCost = rarityBaseCosts[rarity];
-      for (let i = currentUpgrade; i < upgrade; i++) {
-        goldCost += (baseCost * itemLevel) / calculateUpgradeChance(i);
-      }
-    }
-
-    const embed = new EmbedBuilder()
-      .setThumbnail('https://static.wikia.nocookie.net/crusadersroblox/images/1/17/Bot.png/revision/latest?cb=20250304145829&format=original')
-      .setColor('Purple')
-      .setTitle('⚔️ Max Potential ⚔️')
-      .setDescription(`The item's strength at upgrade ${upgrade} is: **${result}**`);
-
-    if (goldCost > 0) {
-      embed.addFields({
-        name: '💰 Average Gold Cost 💰',
-        value: `**${Math.floor(goldCost).toLocaleString()}**`
-      });
-    }
-
-    await interaction.reply({
-      content: `Hey <@${interaction.user.id}>`,
-      embeds: [embed]
-    });
-  }
 
   if (commandName === 'calc-runs') {
     const currentLevel = interaction.options.getNumber('current-level');
     const goalLevel = interaction.options.getNumber('goal-level');
-    const selectedDungeon = interaction.options.getString('dungeon');
+    const dungeon = interaction.options.getString('dungeon');
     const difficulty = interaction.options.getString('difficulty');
     const modifier = parseFloat(interaction.options.getString('modifier')) || 0;
     const vip = interaction.options.getBoolean('vip') || false;
     const potion = interaction.options.getBoolean('xp-potion') || false;
 
     if (goalLevel <= currentLevel) {
-      await interaction.reply({ content: 'The goal level must be higher than your current level.', ephemeral: true });
-      return;
+      return await interaction.reply({ content: 'Your goal level must be higher than your current level.', ephemeral: true });
     }
 
     let totalXP = 0;
@@ -149,26 +111,27 @@ client.on('interactionCreate', async (interaction) => {
       totalXP += xpNeeded(i);
     }
 
-    if (selectedDungeon && difficulty) {
-      let baseXP = dungeons[selectedDungeon][difficulty];
-      let finalXP = baseXP + Math.floor(baseXP * modifier);
-      if (vip) finalXP += Math.floor(baseXP * 0.2);
-      if (potion) finalXP *= 2;
-      let runs = Math.ceil(totalXP / finalXP);
-
-      const embed = new EmbedBuilder()
-        .setColor('Purple')
-        .setThumbnail(dungeons[selectedDungeon]?.image || null)
-        .setTitle('⚔️ Dungeon Run Calculator ⚔️')
-        .setDescription(`**Total XP Needed:** ${totalXP.toLocaleString()}\n**Runs Needed:** ${runs.toLocaleString()}`)
-        .setFooter({ text: 'Crusaders Dungeon Calculator' })
-        .setTimestamp();
-
-      await interaction.reply({
-        content: `Hey <@${interaction.user.id}>`,
-        embeds: [embed]
-      });
+    if (!dungeon || !difficulty) {
+      return await interaction.reply(`**Total XP Needed:** ${totalXP.toLocaleString()}`);
     }
+
+    let baseXP = dungeons[dungeon][difficulty];
+    let finalXP = baseXP + (baseXP * modifier);
+    if (vip) finalXP += baseXP * 0.2;
+    if (potion) finalXP *= 2;
+
+    let runs = Math.ceil(totalXP / finalXP);
+    const embed = new EmbedBuilder()
+      .setColor('Purple')
+      .setThumbnail(dungeons[dungeon].image)
+      .setTitle('⚔️ Dungeon Runs Calculator ⚔️')
+      .setDescription(`**Total XP Needed:** ${totalXP.toLocaleString()}\n**Runs Needed:** ${runs.toLocaleString()}`)
+      .setFooter({ text: 'Crusaders Dungeon Calculator' });
+
+    await interaction.reply({
+      content: `Hey <@${interaction.user.id}>`,
+      embeds: [embed]
+    });
   }
 });
 

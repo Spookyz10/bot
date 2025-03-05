@@ -142,7 +142,6 @@ client.on('interactionCreate', async interaction => {
     const vip = interaction.options.getBoolean('vip') || false;
     const potion = interaction.options.getBoolean('xp-potion') || false;
     
-    // Mapping modifier values to their names
     const modifierValue = interaction.options.getString('modifier') || '0';
     const modifierMap = {
       "0": "no modifier",
@@ -150,14 +149,13 @@ client.on('interactionCreate', async interaction => {
       "1": "Chaotic",
       "4": "Impossible"
     };
-    const modifierName = modifierMap[modifierValue]; // Get the correct modifier name
+    const modifierName = modifierMap[modifierValue]; 
 
     let totalXP = 0;
     for (let i = currentLevel; i < goalLevel; i++) {
       totalXP += xpNeeded(i);
     }
 
-    // Properly format the modifier text
     let modifierText = modifierName !== 'None' ? modifierName : '';
     if (vip) modifierText += modifierText ? `, VIP` : 'VIP';
     if (potion) modifierText += modifierText ? `, 2x XP Potion` : '2x XP Potion';
@@ -171,9 +169,10 @@ client.on('interactionCreate', async interaction => {
 
     Object.keys(dungeons[dungeon]).filter(d => d !== 'image').forEach(difficulty => {
       let baseXP = dungeons[dungeon][difficulty];
-      let finalXP = baseXP + Math.floor(baseXP * parseFloat(modifierValue));
-      if (vip) finalXP += Math.floor(baseXP * 0.2);
+      let finalXP = baseXP * (1 + parseFloat(modifierValue));
+      if (vip) finalXP *= 1.2;
       if (potion) finalXP *= 2;
+
       let runs = Math.ceil(totalXP / finalXP);
       embed.addFields({ name: `${difficulty}`, value: `**${runs}** Runs`, inline: true });
     });

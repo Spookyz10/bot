@@ -96,9 +96,9 @@ client.once('ready', async () => {
         option.setName('modifier').setDescription('Modifier').setRequired(false)
           .addChoices(
             { name: 'None', value: '0' },
-            { name: 'Nightmare', value: '0.5' },
-            { name: 'Chaotic', value: '1' },
-            { name: 'Impossible', value: '4' }
+            { name: 'Nightmare', value: '1.5' },
+            { name: 'Chaotic', value: '2' },
+            { name: 'Impossible', value: '5' }
           ))
       .addBooleanOption(option =>
         option.setName('vip').setDescription('VIP Bonus').setRequired(false))

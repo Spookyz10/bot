@@ -125,9 +125,9 @@ client.on('interactionCreate', async interaction => {
     const embed = new EmbedBuilder()
       .setColor('Purple')
       .setThumbnail('https://static.wikia.nocookie.net/crusadersroblox/images/1/17/Bot.png')
-      .setTitle('⚔️ Max Potential ⚔️')
+      .setTitle('🌟 Potential Calculator 🌟')
       .addFields(
-        { name: '⚔️ Max Potential ⚔️', value: `**${result}**`, inline: false },
+        { name: '⚔️ Potential ⚔️', value: `**${result}**`, inline: false },
         { name: '💰 Average Gold Cost 💰', value: `**${goldCost.toLocaleString()}**`, inline: false }
       )
       .setTimestamp();

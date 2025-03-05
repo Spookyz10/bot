@@ -142,10 +142,10 @@ client.on('interactionCreate', async interaction => {
     const vip = interaction.options.getBoolean('vip') || false;
     const potion = interaction.options.getBoolean('xp-potion') || false;
     
-    // Mapping values back to their proper names
+    // Mapping modifier values to their names
     const modifierValue = interaction.options.getString('modifier') || '0';
     const modifierMap = {
-      "0": "No modifier",
+      "0": "no modifier",
       "0.5": "Nightmare",
       "1": "Chaotic",
       "4": "Impossible"
@@ -165,7 +165,8 @@ client.on('interactionCreate', async interaction => {
     const embed = new EmbedBuilder()
       .setColor('Purple')
       .setThumbnail('https://static.wikia.nocookie.net/crusadersroblox/images/1/17/Bot.png')
-      .setTitle(`To go from lvl ${currentLevel} to lvl ${goalLevel} in ${dungeon} with ${modifierText}, you need:`)
+      .setTitle(`To go from lvl ${currentLevel} to lvl ${goalLevel} you need **${totalXP.toLocaleString()} XP**`)
+      .setDescription(`In **${dungeon}** with **${modifierText}**, you need to do:`)
       .setTimestamp();
 
     Object.keys(dungeons[dungeon]).filter(d => d !== 'image').forEach(difficulty => {

@@ -1,7 +1,5 @@
 const { Client, GatewayIntentBits, SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const client = new Client({
-  intents: [GatewayIntentBits.Guilds],
-});
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 const rarityBaseCosts = {
   Common: 100,
@@ -33,40 +31,44 @@ function xpNeeded(level) {
   return Math.floor(Math.pow((v2 * Math.pow(level + 1, v1) * (level + 1)) - (v2 * (level + 1)), v1));
 }
 
-function calculateUpgradeChance(upgradeLevel) {
-  if (upgradeLevel == 0) return 0.98;
-  if (upgradeLevel == 1) return 0.95;
-  if (upgradeLevel >= 2 && upgradeLevel <= 19) return 1 - (upgradeLevel * 0.05);
-  if (upgradeLevel == 20) return 0.08;
-  if (upgradeLevel == 21) return 0.07;
-  if (upgradeLevel == 22) return 0.05;
+function calculateUpgradeChance(upgrade) {
+  if (upgrade == 0) return 0.98;
+  if (upgrade == 1) return 0.95;
+  if (upgrade >= 2 && upgrade <= 19) return 1 - (upgrade - 1) * 0.05;
+  if (upgrade == 20) return 0.08;
+  if (upgrade == 21) return 0.07;
+  if (upgrade == 22) return 0.05;
   return 1;
 }
 
-function calculateAverageGoldCost(baseCost, itemLevel, startUpgrade, endUpgrade) {
+function calculateGoldCost(currUpgrade, finalUpgrade, rarity, itemLevel) {
+  let baseCost = rarityBaseCosts[rarity];
   let totalGold = 0;
-  for (let i = startUpgrade; i < endUpgrade; i++) {
-    let cost = Math.floor(baseCost * (itemLevel + i) * 0.9);
+
+  for (let i = currUpgrade; i < finalUpgrade; i++) {
     let chance = calculateUpgradeChance(i);
-    totalGold += cost / chance;
+    let attemptCost = Math.floor(baseCost * (itemLevel + i) * 0.9);
+    let averageAttempts = Math.ceil(1 / chance);
+    totalGold += attemptCost * averageAttempts;
   }
-  return Math.floor(totalGold);
+  return totalGold;
 }
 
 client.once('ready', async () => {
   console.log('Bot is online!');
+
   await client.application.commands.set([
     new SlashCommandBuilder()
       .setName('calc-pot')
-      .setDescription('Calculates the max potential based on base-stat and upgrade')
+      .setDescription('Calculates the max potential and average gold cost')
       .addNumberOption(option =>
-        option.setName('base-stat').setDescription('The base stat number (statline)').setRequired(true))
+        option.setName('base-stat').setDescription('Base stat value').setRequired(true))
       .addNumberOption(option =>
-        option.setName('upgrade').setDescription('The upgrade number (final upgrade level)').setRequired(true))
+        option.setName('upgrade').setDescription('Final upgrade level').setRequired(true))
       .addNumberOption(option =>
-        option.setName('curr-upgrade').setDescription('The current upgrade level').setRequired(false))
+        option.setName('curr-upgrade').setDescription('Current upgrade level').setRequired(true))
       .addStringOption(option =>
-        option.setName('rarity').setDescription('The rarity of the item').setRequired(false)
+        option.setName('rarity').setDescription('Item rarity').setRequired(true)
           .addChoices(
             { name: 'Common', value: 'Common' },
             { name: 'Uncommon', value: 'Uncommon' },
@@ -76,11 +78,10 @@ client.once('ready', async () => {
             { name: 'Mythical', value: 'Mythical' }
           ))
       .addNumberOption(option =>
-        option.setName('item-level').setDescription('The level of the item').setRequired(false)),
-
+        option.setName('item-level').setDescription('Item level').setRequired(true)),
     new SlashCommandBuilder()
       .setName('calc-runs')
-      .setDescription('Calculates dungeon runs needed to reach a goal level')
+      .setDescription('Calculates dungeon runs needed')
       .addNumberOption(option =>
         option.setName('current-level').setDescription('Your current level').setRequired(true))
       .addNumberOption(option =>
@@ -92,7 +93,7 @@ client.once('ready', async () => {
             { name: 'Sunken Ruins', value: 'Sunken Ruins' }
           ))
       .addStringOption(option =>
-        option.setName('modifier').setDescription('Select a modifier').setRequired(false)
+        option.setName('modifier').setDescription('Modifier').setRequired(false)
           .addChoices(
             { name: 'None', value: '0' },
             { name: 'Nightmare', value: '0.5' },
@@ -100,13 +101,13 @@ client.once('ready', async () => {
             { name: 'Impossible', value: '4' }
           ))
       .addBooleanOption(option =>
-        option.setName('vip').setDescription('Do you have VIP bonus?').setRequired(false))
+        option.setName('vip').setDescription('VIP Bonus').setRequired(false))
       .addBooleanOption(option =>
-        option.setName('xp-potion').setDescription('Do you have the 2x XP Potion?').setRequired(false)),
+        option.setName('xp-potion').setDescription('XP Potion').setRequired(false)),
   ]);
 });
 
-client.on('interactionCreate', async (interaction) => {
+client.on('interactionCreate', async interaction => {
   if (!interaction.isCommand()) return;
 
   const { commandName } = interaction;
@@ -114,30 +115,21 @@ client.on('interactionCreate', async (interaction) => {
   if (commandName === 'calc-pot') {
     const baseStat = interaction.options.getNumber('base-stat');
     const upgrade = interaction.options.getNumber('upgrade');
+    const currUpgrade = interaction.options.getNumber('curr-upgrade');
     const rarity = interaction.options.getString('rarity');
     const itemLevel = interaction.options.getNumber('item-level');
+
     const result = Math.floor(upgrade + baseStat + (baseStat * (upgrade * 0.02)));
+    const goldCost = calculateGoldCost(currUpgrade, upgrade, rarity, itemLevel);
 
     const embed = new EmbedBuilder()
       .setColor('Purple')
-      .setThumbnail('https://static.wikia.nocookie.net/crusadersroblox/images/1/17/Bot.png/revision/latest?cb=20250304145829&format=original')
+      .setThumbnail('https://static.wikia.nocookie.net/crusadersroblox/images/1/17/Bot.png')
       .setTitle('⚔️ Max Potential ⚔️')
-      .setDescription(`The item's strength at upgrade ${upgrade} is: **${result}**`)
-      .setFooter({ text: 'Max Potential Calculation' })
+      .setDescription(`**Max Potential:** ${result}\n**Average Gold Cost:** ${goldCost.toLocaleString()}`)
       .setTimestamp();
 
-    if (rarity && itemLevel) {
-      const baseCost = rarityBaseCosts[rarity];
-      if (baseCost) {
-        const avgGold = calculateAverageGoldCost(baseCost, itemLevel, 0, upgrade);
-        embed.addFields({
-          name: '💰 Average Gold Cost 💰',
-          value: `**${avgGold.toLocaleString()}**`,
-        });
-      }
-    }
-
-    await interaction.reply({ content: `Hey <@${interaction.user.id}>`, embeds: [embed] });
+    await interaction.reply({ embeds: [embed] });
   }
 
   if (commandName === 'calc-runs') {

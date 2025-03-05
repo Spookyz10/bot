@@ -132,7 +132,7 @@ client.on('interactionCreate', async interaction => {
       )
       .setTimestamp();
 
-    await interaction.reply({ embeds: [embed] });
+    await interaction.reply({ content: `Hey <@${interaction.user.id}>`, embeds: [embed] });
   }
 
   if (commandName === 'calc-runs') {

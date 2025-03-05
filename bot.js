@@ -139,7 +139,6 @@ client.on('interactionCreate', async interaction => {
     const currentLevel = interaction.options.getNumber('current-level');
     const goalLevel = interaction.options.getNumber('goal-level');
     const dungeon = interaction.options.getString('dungeon');
-    const modifier = parseFloat(interaction.options.getString('modifier')) || 0;
     const vip = interaction.options.getBoolean('vip') || false;
     const potion = interaction.options.getBoolean('xp-potion') || false;
 

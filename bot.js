@@ -1,5 +1,7 @@
 const { Client, GatewayIntentBits, SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({
+  intents: [GatewayIntentBits.Guilds],
+});
 
 const rarityBaseCosts = {
   Common: 100,
@@ -31,16 +33,37 @@ function xpNeeded(level) {
   return Math.floor(Math.pow((v2 * Math.pow(level + 1, v1) * (level + 1)) - (v2 * (level + 1)), v1));
 }
 
+function calculateUpgradeChance(upgradeLevel) {
+  if (upgradeLevel === 0) return 0.98;
+  if (upgradeLevel === 1) return 0.95;
+  if (upgradeLevel >= 2 && upgradeLevel <= 19) return 1 - (upgradeLevel - 1) * 0.05;
+  if (upgradeLevel === 20) return 0.08;
+  if (upgradeLevel === 21) return 0.07;
+  if (upgradeLevel === 22) return 0.05;
+  return 1;
+}
+
+function calculateGoldCost(baseCost, itemLevel, currentUpgrade, targetUpgrade) {
+  let totalCost = 0;
+  for (let i = currentUpgrade; i < targetUpgrade; i++) {
+    let chance = calculateUpgradeChance(i);
+    let cost = baseCost * (itemLevel + i) * 0.9;
+    totalCost += cost / chance;
+  }
+  return Math.floor(totalCost);
+}
+
 client.once('ready', async () => {
   console.log('Bot is online!');
+
   await client.application.commands.set([
     new SlashCommandBuilder()
       .setName('calc-pot')
       .setDescription('Calculates the max potential based on base-stat and upgrade')
       .addNumberOption(option =>
-        option.setName('base-stat').setDescription('The base stat number (statline)').setRequired(true))
+        option.setName('base-stat').setDescription('The base stat number').setRequired(true))
       .addNumberOption(option =>
-        option.setName('upgrade').setDescription('The upgrade number (final upgrade level)').setRequired(true))
+        option.setName('upgrade').setDescription('The upgrade number').setRequired(true))
       .addNumberOption(option =>
         option.setName('curr-upgrade').setDescription('The current upgrade level').setRequired(false))
       .addStringOption(option =>
@@ -63,7 +86,7 @@ client.once('ready', async () => {
       .addNumberOption(option =>
         option.setName('goal-level').setDescription('Your goal level').setRequired(true))
       .addStringOption(option =>
-        option.setName('dungeon').setDescription('Select a dungeon').setRequired(true)
+        option.setName('dungeon').setDescription('Select a dungeon').setRequired(false)
           .addChoices(
             { name: 'Pirate Cove', value: 'Pirate Cove' },
             { name: 'Sunken Ruins', value: 'Sunken Ruins' }
@@ -79,7 +102,7 @@ client.once('ready', async () => {
       .addBooleanOption(option =>
         option.setName('vip').setDescription('Do you have VIP bonus?').setRequired(false))
       .addBooleanOption(option =>
-        option.setName('xp-potion').setDescription('Do you have the 2x XP Potion?').setRequired(false))
+        option.setName('xp-potion').setDescription('Do you have the 2x XP Potion?').setRequired(false)),
   ]);
 });
 
@@ -91,35 +114,39 @@ client.on('interactionCreate', async (interaction) => {
   if (commandName === 'calc-pot') {
     const baseStat = interaction.options.getNumber('base-stat');
     const upgrade = interaction.options.getNumber('upgrade');
-    const currentUpgrade = interaction.options.getNumber('curr-upgrade');
+    const currentUpgrade = interaction.options.getNumber('curr-upgrade') || 0;
     const rarity = interaction.options.getString('rarity');
     const itemLevel = interaction.options.getNumber('item-level');
-    const result = Math.floor(upgrade + baseStat + (baseStat * (upgrade * 0.02)));
+
+    const statline = baseStat;
+    const result = Math.floor(upgrade + statline + (statline * (upgrade * 0.02)));
 
     const embed = new EmbedBuilder()
       .setThumbnail('https://static.wikia.nocookie.net/crusadersroblox/images/1/17/Bot.png/revision/latest?cb=20250304145829&format=original')
       .setColor('Purple')
       .setTitle('⚔️ Max Potential ⚔️')
-      .setDescription(`The item's strength at upgrade ${upgrade} is: **${result}**`)
-      .setFooter({ text: 'Max Potential Calculation' })
-      .setTimestamp();
+      .setDescription(`The item's strength at upgrade ${upgrade} is: **${result}**`);
 
     if (itemLevel && rarity) {
       const baseCost = rarityBaseCosts[rarity];
-      const avgGoldCost = Math.floor(baseCost * itemLevel * (upgrade - currentUpgrade || upgrade) * 0.6);
-      embed.addFields({ name: '💰 Average Gold Cost 💰', value: `${avgGoldCost.toLocaleString()}` });
+      if (baseCost) {
+        const avgCost = calculateGoldCost(baseCost, itemLevel, currentUpgrade, upgrade);
+        embed.addFields({
+          name: '💰 Average Gold Cost 💰',
+          value: `**${avgCost.toLocaleString()} Gold**`
+        });
+      }
     }
 
-    await interaction.reply({ content: `Hey <@${interaction.user.id}>`, embeds: [embed] });
+    await interaction.reply({
+      content: `Hey <@${interaction.user.id}>`,
+      embeds: [embed]
+    });
   }
 
   if (commandName === 'calc-runs') {
     const currentLevel = interaction.options.getNumber('current-level');
     const goalLevel = interaction.options.getNumber('goal-level');
-    const dungeon = interaction.options.getString('dungeon');
-    const modifier = parseFloat(interaction.options.getString('modifier')) || 0;
-    const vip = interaction.options.getBoolean('vip') || false;
-    const potion = interaction.options.getBoolean('xp-potion') || false;
 
     if (goalLevel <= currentLevel) {
       await interaction.reply({ content: 'The goal level must be higher than your current level.', ephemeral: true });
@@ -132,26 +159,25 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     const embed = new EmbedBuilder()
-      .setThumbnail('https://static.wikia.nocookie.net/crusadersroblox/images/1/17/Bot.png/revision/latest?cb=20250304145829&format=original')
       .setColor('Purple')
+      .setThumbnail('https://static.wikia.nocookie.net/crusadersroblox/images/1/17/Bot.png/revision/latest?cb=20250304145829&format=original')
       .setTitle('⚔️ Dungeon Run Calculator ⚔️')
-      .setDescription(`**Total XP Needed:** ${totalXP.toLocaleString()}`)
-      .setFooter({ text: 'Crusaders Dungeon Calculator' })
-      .setTimestamp()
-      .setImage(dungeons[dungeon]?.image);
+      .setDescription(`**Total XP Needed:** ${totalXP.toLocaleString()}`);
 
-    for (const difficulty in dungeons[dungeon]) {
-      if (difficulty !== 'image') {
-        let baseXP = dungeons[dungeon][difficulty];
-        let finalXP = baseXP + Math.floor(baseXP * modifier);
-        if (vip) finalXP += Math.floor(baseXP * 0.2);
-        if (potion) finalXP *= 2;
-        let runs = Math.ceil(totalXP / finalXP);
-        embed.addFields({ name: `${difficulty}`, value: `${runs.toLocaleString()} Runs`, inline: true });
+    for (let dungeon in dungeons) {
+      for (let diff in dungeons[dungeon]) {
+        if (diff === 'image') continue;
+        const baseXP = dungeons[dungeon][diff];
+        const runs = Math.ceil(totalXP / baseXP);
+        embed.addFields({ name: `${dungeon} (${diff})`, value: `${runs.toLocaleString()} Runs` });
       }
+      embed.setImage(dungeons[dungeon].image);
     }
 
-    await interaction.reply({ content: `Hey <@${interaction.user.id}>`, embeds: [embed] });
+    await interaction.reply({
+      content: `Hey <@${interaction.user.id}>`,
+      embeds: [embed]
+    });
   }
 });
 

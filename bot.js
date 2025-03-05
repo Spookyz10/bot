@@ -96,9 +96,9 @@ client.once('ready', async () => {
         option.setName('modifier').setDescription('Modifier').setRequired(false)
           .addChoices(
             { name: 'None', value: '0' },
-            { name: 'Nightmare', value: '1.5' },
-            { name: 'Chaotic', value: '2' },
-            { name: 'Impossible', value: '5' }
+            { name: 'Nightmare', value: '0.5' },
+            { name: 'Chaotic', value: '1' },
+            { name: 'Impossible', value: '4' }
           ))
       .addBooleanOption(option =>
         option.setName('vip').setDescription('VIP Bonus').setRequired(false))
@@ -141,15 +141,16 @@ client.on('interactionCreate', async interaction => {
     const dungeon = interaction.options.getString('dungeon');
     const vip = interaction.options.getBoolean('vip') || false;
     const potion = interaction.options.getBoolean('xp-potion') || false;
-    const modifierValue = parseFloat(interaction.options.getString('modifier')) || 0;
     const modifierName = interaction.options.getString('modifier') || 'None';
+    const modifierValue = modifierName === 'None' ? 0 : parseFloat(modifierName); // Convert value only if it's not "None"
 
     let totalXP = 0;
     for (let i = currentLevel; i < goalLevel; i++) {
       totalXP += xpNeeded(i);
     }
 
-    let modifierText = modifierName !== 'None' ? `${modifierName}` : '';
+    // Properly format the modifier text
+    let modifierText = modifierName !== 'None' ? modifierName : '';
     if (vip) modifierText += modifierText ? `, VIP` : 'VIP';
     if (potion) modifierText += modifierText ? `, 2x XP Potion` : '2x XP Potion';
 

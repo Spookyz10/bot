@@ -117,6 +117,29 @@ client.on('interactionCreate', async interaction => {
 
   const { commandName } = interaction;
 
+if (commandName === 'calc-pot') {
+    const baseStat = interaction.options.getNumber('base-stat');
+    const upgrade = interaction.options.getNumber('upgrade');
+    const currUpgrade = interaction.options.getNumber('curr-upgrade');
+    const rarity = interaction.options.getString('rarity');
+    const itemLevel = interaction.options.getNumber('item-level');
+
+    const result = Math.floor(upgrade + baseStat + (baseStat * (upgrade * 0.02)));
+    const goldCost = calculateGoldCost(currUpgrade, upgrade, rarity, itemLevel);
+
+    const embed = new EmbedBuilder()
+      .setColor('Purple')
+      .setThumbnail('https://static.wikia.nocookie.net/crusadersroblox/images/1/17/Bot.png')
+      .setTitle('🌟 Potential Calculator 🌟')
+      .addFields(
+        { name: '⚔️ Potential ⚔️', value: `**${result}**`, inline: false },
+        { name: '💰 Average Gold Cost 💰', value: `**${goldCost.toLocaleString()}**`, inline: false }
+      )
+      .setTimestamp();
+
+    await interaction.reply({ content: `Hey <@${interaction.user.id}>`, embeds: [embed] });
+  }
+
   if (commandName === 'calc-runs') {
     const currentLevel = interaction.options.getNumber('current-level');
     const goalLevel = interaction.options.getNumber('goal-level');

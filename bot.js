@@ -160,7 +160,7 @@ client.on('interactionCreate', async interaction => {
       .setDescription(`With **${currStat}** current stat and **${currUpg}** upgrades, the base stat is **${baseStat}**.`)
       .setTimestamp();
 
-    await interaction.reply({ embeds: [embed] });
+    await interaction.reply({ content: `Hey <@${interaction.user.id}>`, embeds: [embed] });
   }
 
 if (commandName === 'calc-runs') {

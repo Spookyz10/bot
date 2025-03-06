@@ -35,37 +35,36 @@ client.once('ready', async () => {
   console.log('Bot is online!');
 
   await client.application.commands.set([
-    new SlashCommandBuilder()
-      .setName('calc-runs')
-      .setDescription('Calculates dungeon runs needed')
-      .addNumberOption(option =>
-        option.setName('current-level').setDescription('Your current level').setRequired(true))
-      .addNumberOption(option =>
-        option.setName('goal-level').setDescription('Your goal level').setRequired(true))
-      .addNumberOption(option =>
-        option.setName('curr-xp').setDescription('Current XP').setRequired(false))
-      .addStringOption(option =>
-        option.setName('dungeon').setDescription('Select a dungeon').setRequired(true)
-          .addChoices(
-            { name: 'Pirate Cove', value: 'Pirate Cove' },
-            { name: 'Sunken Ruins', value: 'Sunken Ruins' }
-          ))
-      .addStringOption(option =>
-        option.setName('modifier').setDescription('Modifier').setRequired(false)
-          .addChoices(
-            { name: 'None', value: '0' },
-            { name: 'Nightmare', value: '0.5' },
-            { name: 'Chaotic', value: '1' },
-            { name: 'Impossible', value: '4' }
-          ))
-      .addBooleanOption(option =>
-        option.setName('vip').setDescription('VIP Bonus').setRequired(false))
-      .addBooleanOption(option =>
-        option.setName('xp-potion').setDescription('XP Potion').setRequired(false))
-      .addBooleanOption(option =>
-        option.setName('weekend-boost').setDescription('Weekend Boost').setRequired(false)),
-  ]);
-});
+  new SlashCommandBuilder()
+    .setName('calc-runs')
+    .setDescription('Calculates dungeon runs needed')
+    .addNumberOption(option =>
+      option.setName('current-level').setDescription('Your current level').setRequired(true))
+    .addNumberOption(option =>
+      option.setName('goal-level').setDescription('Your goal level').setRequired(true))
+    .addStringOption(option =>
+      option.setName('dungeon').setDescription('Select a dungeon').setRequired(true)
+        .addChoices(
+          { name: 'Pirate Cove', value: 'Pirate Cove' },
+          { name: 'Sunken Ruins', value: 'Sunken Ruins' }
+        ))
+    .addNumberOption(option =>
+      option.setName('curr-xp').setDescription('Current XP').setRequired(false))
+    .addStringOption(option =>
+      option.setName('modifier').setDescription('Modifier').setRequired(false)
+        .addChoices(
+          { name: 'None', value: '0' },
+          { name: 'Nightmare', value: '0.5' },
+          { name: 'Chaotic', value: '1' },
+          { name: 'Impossible', value: '4' }
+        ))
+    .addBooleanOption(option =>
+      option.setName('vip').setDescription('VIP Bonus').setRequired(false))
+    .addBooleanOption(option =>
+      option.setName('xp-potion').setDescription('XP Potion').setRequired(false))
+    .addBooleanOption(option =>
+      option.setName('weekend-boost').setDescription('Weekend Boost').setRequired(false)),
+]);
 
 client.on('interactionCreate', async interaction => {
   if (!interaction.isCommand()) return;

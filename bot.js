@@ -152,12 +152,12 @@ client.on('interactionCreate', async interaction => {
     const currStat = interaction.options.getNumber('curr-stat');
     const currUpg = interaction.options.getNumber('curr-upg');
 
-    const baseStat = (currStat - currUpg) / (1 + (currUpg * 0.02));
+    const baseStat = Math.floor((currStat - currUpg) / (1 + (currUpg * 0.02)));
 
     const embed = new EmbedBuilder()
       .setColor('Blue')
       .setTitle('Base Stat Calculator')
-      .setDescription(`With **${currStat}** current stat and **${currUpg}** upgrades, the base stat is **${baseStat.toFixed(2)}**.`)
+      .setDescription(`With **${currStat}** current stat and **${currUpg}** upgrades, the base stat is **${baseStat}**.`)
       .setTimestamp();
 
     await interaction.reply({ embeds: [embed] });

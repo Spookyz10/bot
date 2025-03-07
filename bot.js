@@ -228,7 +228,7 @@ if (commandName === 'calc-runs') {
           if (seconds > 0 && timeText === '') timeText += `${seconds} second${seconds > 1 ? 's' : ''}`;
           
           fieldValue += `\n\nTime Needed:\n${timeText}`;
-        }
+        
       }
 
       embed.addFields({

@@ -214,29 +214,35 @@ if (commandName === 'calc-runs') {
 
       let runs = Math.ceil(totalXP / finalXP);
       let totalTime = runs * time;
-      let hours = Math.floor(totalTime / 3600);
-      let minutes = Math.floor((totalTime % 3600) / 60);
-      let seconds = totalTime % 60;
-      
-      let timeText = '';
-      if (hours > 0) timeText += `${hours} hour${hours > 1 ? 's' : ''}`;
-      if (minutes > 0) timeText += `${timeText ? ' & ' : ''}${minutes} minute${minutes > 1 ? 's' : ''}`;
-      if (seconds > 0 && timeText === '') timeText += `${seconds} second${seconds > 1 ? 's' : ''}`;
-      
-      if (timeText === '') timeText = 'Instant';
+      let timeText = '';
 
-      embed.addFields({
-        name: `${difficulty}`,
-        value: `**${runs}** Runs**\n\nTime Needed:**\n${timeText}`,
-        inline: true
-      });
+      if (time !== 0) {
+        let hours = Math.floor(totalTime / 3600);
+        let minutes = Math.floor((totalTime % 3600) / 60);
+        let seconds = totalTime % 60;
 
+        if (hours > 0) timeText += `${hours} hour${hours > 1 ? 's' : ''}`;
+        if (minutes > 0) timeText += `${timeText ? ' & ' : ''}${minutes} minute${minutes > 1 ? 's' : ''}`;
+        if (seconds > 0 && timeText === '') timeText += `${seconds} second${seconds > 1 ? 's' : ''}`;
+        if (timeText === '') timeText = '*Instant*';
 
-    });
+        embed.addFields({
+          name: `${difficulty}`,
+          value: `**${runs}** Runs**\n\nTime Needed:**\n${timeText}`,
+          inline: true
+        });
+      } else {
+        embed.addFields({
+          name: `${difficulty}`,
+          value: `**${runs}** Runs`,
+          inline: true
+        });
+      }
+});
 
-    embed.setImage(dungeons[dungeon].image);
+embed.setImage(dungeons[dungeon].image);
 
-    await interaction.reply({ content: `Hey <@${interaction.user.id}>`, embeds: [embed] });
+await interaction.reply({ content: `Hey <@${interaction.user.id}>`, embeds: [embed] });
   }
 });
 

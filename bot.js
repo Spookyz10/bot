@@ -173,7 +173,7 @@ if (commandName === 'calc-runs') {
     const potion = interaction.options.getBoolean('xp-potion') || false;
     const weekendBoost = interaction.options.getBoolean('weekend-boost') || false; 
     const currXP = interaction.options.getNumber('curr-xp') || 0; 
-    const time = interaction.options.getNumber('time-per-run') || 0; //this is IN seconds
+    const time = interaction.options.getNumber('time-per-run'); 
 
     const modifierValue = interaction.options.getString('modifier') || '0';
     const modifierMap = {
@@ -194,7 +194,7 @@ if (commandName === 'calc-runs') {
     let modifierText = modifierName !== 'None' ? modifierName : '';
     if (vip) modifierText += modifierText ? `, VIP` : 'VIP';
     if (potion) modifierText += modifierText ? `, 2x XP Potion` : '2x XP Potion';
-    if (weekendBoost) modifierText += modifierText ? `, Weekend Boost` : 'Weekend Boost'; // Added Weekend Boost
+    if (weekendBoost) modifierText += modifierText ? `, Weekend Boost` : 'Weekend Boost';
 
     const embed = new EmbedBuilder()
       .setColor('Purple')
@@ -208,37 +208,38 @@ if (commandName === 'calc-runs') {
       let totalBuff = 0;
       if (vip) totalBuff += 20;
       if (potion) totalBuff += 100;
-      if (weekendBoost) totalBuff += 50; // Added Weekend Boost
+      if (weekendBoost) totalBuff += 50;
 
       let finalXP = Math.floor((baseXP * (1 + totalBuff / 100)) * (1 + parseFloat(modifierValue)));
 
       let runs = Math.ceil(totalXP / finalXP);
-      let totalTime = runs * time;
-      let timeText = '';
+      
+      let fieldValue = `**${runs}** Runs`;
 
-      if (time !== 0) {
-        let hours = Math.floor(totalTime / 3600);
-        let minutes = Math.floor((totalTime % 3600) / 60);
-        let seconds = totalTime % 60;
+      if (time !== undefined) { 
+        if (time === 0) {
+          fieldValue += `\n\nTime Needed:\n***Instant***`;
+        } else {
+          let totalTime = runs * time;
+          let hours = Math.floor(totalTime / 3600);
+          let minutes = Math.floor((totalTime % 3600) / 60);
+          let seconds = totalTime % 60;
 
-        if (hours > 0) timeText += `${hours} hour${hours > 1 ? 's' : ''}`;
-        if (minutes > 0) timeText += `${timeText ? ' & ' : ''}${minutes} minute${minutes > 1 ? 's' : ''}`;
-        if (seconds > 0 && timeText === '') timeText += `${seconds} second${seconds > 1 ? 's' : ''}`;
-        if (timeText === '') timeText = '*Instant*';
-
-        embed.addFields({
-          name: `${difficulty}`,
-          value: `**${runs}** Runs**\n\nTime Needed:**\n${timeText}`,
-          inline: true
-        });
-      } else {
-        embed.addFields({
-          name: `${difficulty}`,
-          value: `**${runs}** Runs`,
-          inline: true
-        });
+          let timeText = '';
+          if (hours > 0) timeText += `${hours} hour${hours > 1 ? 's' : ''}`;
+          if (minutes > 0) timeText += `${timeText ? ' & ' : ''}${minutes} minute${minutes > 1 ? 's' : ''}`;
+          if (seconds > 0 && timeText === '') timeText += `${seconds} second${seconds > 1 ? 's' : ''}`;
+          
+          fieldValue += `\n\nTime Needed:\n${timeText}`;
+        }
       }
-});
+
+      embed.addFields({
+        name: `${difficulty}`,
+        value: fieldValue,
+        inline: true
+      });
+    });
 
 embed.setImage(dungeons[dungeon].image);
 

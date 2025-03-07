@@ -216,7 +216,7 @@ if (commandName === 'calc-runs') {
       
       let fieldValue = `**${runs}** Runs`;
 
-      if (time !== undefined) { 
+      if (time !== null) { 
           let totalTime = runs * (time + 15);
           let hours = Math.floor(totalTime / 3600);
           let minutes = Math.floor((totalTime % 3600) / 60);

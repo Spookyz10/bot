@@ -108,7 +108,9 @@ client.once('ready', async () => {
       .addBooleanOption(option =>
         option.setName('weekend-boost').setDescription('Weekend XP Boost (50%)').setRequired(false))
       .addNumberOption(option =>
-        option.setName('curr-xp').setDescription('Current XP').setRequired(false)),
+        option.setName('curr-xp').setDescription('Current XP').setRequired(false))
+      .addNumberOption(option =>
+        option.setName('time-per-run').setDescription('Time per run IN SECONDS').setRequired(false)),
 
     new SlashCommandBuilder()
       .setName('find-basestat')
@@ -169,8 +171,9 @@ if (commandName === 'calc-runs') {
     const dungeon = interaction.options.getString('dungeon');
     const vip = interaction.options.getBoolean('vip') || false;
     const potion = interaction.options.getBoolean('xp-potion') || false;
-    const weekendBoost = interaction.options.getBoolean('weekend-boost') || false; // Added Weekend Boost
-    const currXP = interaction.options.getNumber('curr-xp') || 0; // Added Current XP
+    const weekendBoost = interaction.options.getBoolean('weekend-boost') || false; 
+    const currXP = interaction.options.getNumber('curr-xp') || 0; 
+    const time = interaction.options.getNumber('time-per-run') || 0; //this is IN seconds
 
     const modifierValue = interaction.options.getString('modifier') || '0';
     const modifierMap = {
@@ -210,7 +213,22 @@ if (commandName === 'calc-runs') {
       let finalXP = Math.floor((baseXP * (1 + totalBuff / 100)) * (1 + parseFloat(modifierValue)));
 
       let runs = Math.ceil(totalXP / finalXP);
-      embed.addFields({ name: `${difficulty}`, value: `**${runs}** Runs`, inline: true });
+      let totalTime = runs * time;
+      let hours = Math.floor(totalTime / 3600);
+      let minutes = Math.floor((totalTime % 3600) / 60);
+      let seconds = totalTime % 60;
+      
+      let timeText = '';
+      if (hours > 0) timeText += `${hours} hour${hours > 1 ? 's' : ''}`;
+      if (minutes > 0) timeText += `${timeText ? ' & ' : ''}${minutes} minute${minutes > 1 ? 's' : ''}`;
+      if (seconds > 0 && timeText === '') timeText += `${seconds} second${seconds > 1 ? 's' : ''}`;
+      
+      embed.addFields({
+        name: `${difficulty}`,
+        value: `**${runs}** Runs\nTime Needed:\n${timeText}`,
+        inline: true
+      });
+
     });
 
     embed.setImage(dungeons[dungeon].image);

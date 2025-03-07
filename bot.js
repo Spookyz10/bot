@@ -227,7 +227,7 @@ if (commandName === 'calc-runs') {
           if (minutes > 0) timeText += `${timeText ? ' & ' : ''}${minutes} minute${minutes > 1 ? 's' : ''}`;
           if (seconds > 0 && timeText === '') timeText += `${seconds} second${seconds > 1 ? 's' : ''}`;
           
-          fieldValue += `\n\nTime Needed:\n${timeText}`;
+          fieldValue += `\n\n**Time Needed:**\n${timeText}`;
         
       }
 

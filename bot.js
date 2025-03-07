@@ -223,11 +223,14 @@ if (commandName === 'calc-runs') {
       if (minutes > 0) timeText += `${timeText ? ' & ' : ''}${minutes} minute${minutes > 1 ? 's' : ''}`;
       if (seconds > 0 && timeText === '') timeText += `${seconds} second${seconds > 1 ? 's' : ''}`;
       
+      if (timeText === '') timeText = 'Instant';
+
       embed.addFields({
         name: `${difficulty}`,
-        value: `**${runs}** Runs\nTime Needed:\n${timeText}`,
+        value: `**${runs}** Runs**\n\nTime Needed:**\n${timeText}`,
         inline: true
       });
+
 
     });
 

@@ -217,10 +217,7 @@ if (commandName === 'calc-runs') {
       let fieldValue = `**${runs}** Runs`;
 
       if (time !== undefined) { 
-        if (time === 0) {
-          fieldValue += `\n\nTime Needed:\n***Instant***`;
-        } else {
-          let totalTime = runs * time;
+          let totalTime = runs * (time + 15);
           let hours = Math.floor(totalTime / 3600);
           let minutes = Math.floor((totalTime % 3600) / 60);
           let seconds = totalTime % 60;
@@ -241,10 +238,10 @@ if (commandName === 'calc-runs') {
       });
     });
 
-embed.setImage(dungeons[dungeon].image);
-
-await interaction.reply({ content: `Hey <@${interaction.user.id}>`, embeds: [embed] });
-  }
+    embed.setImage(dungeons[dungeon].image);
+    
+    await interaction.reply({ content: `Hey <@${interaction.user.id}>`, embeds: [embed] });
+  }
 });
 
 client.login(process.env.TOKEN);

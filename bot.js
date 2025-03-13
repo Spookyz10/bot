@@ -149,7 +149,7 @@ client.once('ready', async () => {
       .addNumberOption(option =>
         option.setName('base-damage').setDescription('Your base attack damage').setRequired(true))
       .addNumberOption(option =>
-        option.setName('boss-slayer').setDescription('% of your boss slayer trait').setRequired(false))
+        option.setName('boss-slayer').setDescription('% of your boss slayer trait').setRequired(true))
       .addNumberOption(option =>
         option.setName('crit-chance').setDescription('% Critical Hit Chance').setRequired(true))
       .addNumberOption(option =>

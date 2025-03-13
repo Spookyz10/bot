@@ -1,6 +1,29 @@
 const { Client, GatewayIntentBits, SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
+const skills = {
+    "Meteor Strike": { baseDmg: 200, pct: 700, cooldown: 7, ticks: 1 },
+    "Tornado": { baseDmg: 80, pct: 120, cooldown: 9, ticks: 7 },
+    "Heal Pulse": { baseDmg: 0, pct: 0, cooldown: 0, ticks: 0 },
+    "Geyser Blast": { baseDmg: 50, pct: 120, cooldown: 6, ticks: 7 },
+    "Wind Slash": { baseDmg: 55, pct: 170, cooldown: 5, ticks: 3 },
+    "Rush": { baseDmg: 390, pct: 700, cooldown: 6, ticks: 1 },
+    "Vortex Slash": { baseDmg: 50, pct: 170, cooldown: 5, ticks: 2 },
+    "Magician's Bubble": { baseDmg: 0, pct: 0, cooldown: 0, ticks: 0 },
+    "Stone Breaker": { baseDmg: 3, pct: 80, cooldown: 5, ticks: 2 },
+    "Fireball": { baseDmg: 15, pct: 93, cooldown: 5, ticks: 1 },
+    "Firebolt": { baseDmg: 10, pct: 75, cooldown: 5, ticks: 1 },
+    "Piercing Strike": { baseDmg: 10, pct: 160, cooldown: 5, ticks: 1 },
+    "Stomp": { baseDmg: 8, pct: 90, cooldown: 4, ticks: 1 },
+    "Lightning Strike": { baseDmg: 10, pct: 170, cooldown: 6, ticks: 1 },
+    "Whirlwind": { baseDmg: 4, pct: 101, cooldown: 7.4, ticks: 6 },
+    "False Slash": { baseDmg: 10, pct: 160, cooldown: 5, ticks: 1 },
+    "Fireball Ride": { baseDmg: 18, pct: 124, cooldown: 8, ticks: 1 },
+    "Anchor Smash": { baseDmg: 20, pct: 250, cooldown: 6, ticks: 1 },
+    "Cannon Monkey": { baseDmg: 45, pct: 110, cooldown: 12, ticks: 10 },
+    "Taunt": { baseDmg: 0, pct: 0, cooldown: 0, ticks: 0 },
+};
+
 const rarityBaseCosts = {
   Common: 100,
   Uncommon: 110,
@@ -119,6 +142,28 @@ client.once('ready', async () => {
         option.setName('curr-stat').setDescription('Current stat value').setRequired(true))
       .addNumberOption(option =>
         option.setName('curr-upg').setDescription('Current upgrade level').setRequired(true)),
+
+    new SlashCommandBuilder()
+      .setName('calc-floor')
+      .setDescription('Calculates the max floor you can reach in the Boss Rush')
+      .addNumberOption(option =>
+        option.setName('base-damage').setDescription('Your base attack damage').setRequired(true))
+      .addNumberOption(option =>
+        option.setName('boss-slayer').setDescription('% of your boss slayer trait').setRequired(false))
+      .addNumberOption(option =>
+        option.setName('crit-chance').setDescription('% Critical Hit Chance').setRequired(true))
+      .addNumberOption(option =>
+        option.setName('crit-damage').setDescription('% Critical Hit Damage').setRequired(true))
+      .addStringOption(option =>
+        option.setName('skill1').setDescription('Your first skill').setRequired(true)
+          .addChoices(...Object.keys(skills).map(skill => ({ name: skill, value: skill }))))
+      .addStringOption(option =>
+        option.setName('skill2').setDescription('Your second skill').setRequired(true)
+          .addChoices(...Object.keys(skills).map(skill => ({ name: skill, value: skill }))))
+      .addStringOption(option =>
+        option.setName('skill3').setDescription('Your third skill').setRequired(true)
+          .addChoices(...Object.keys(skills).map(skill => ({ name: skill, value: skill })))),
+
   ]);
 });
 
@@ -165,6 +210,74 @@ client.on('interactionCreate', async interaction => {
     await interaction.reply({ content: `Hey <@${interaction.user.id}>`, embeds: [embed] });
   }
 
+if (commandName === 'calc-floor') {
+  const baseDamage = interaction.options.getNumber('base-damage');
+  const bossSlayer = interaction.options.getNumber('boss-slayer') || 0;
+  const critChance = interaction.options.getNumber('crit-chance');
+  const critDamage = interaction.options.getNumber('crit-damage');
+  const skill1 = interaction.options.getString('skill1');
+  const skill2 = interaction.options.getString('skill2');
+  const skill3 = interaction.options.getString('skill3');
+
+  function calculateDamage(base, skill) {
+    let total = (skills[skill].baseDmg + (base * (skills[skill].pct / 100))) * skills[skill].ticks;
+    total += total * (bossSlayer / 100);
+
+    if (Math.random() * 100 < critChance) {
+      total += total * (critDamage / 100);
+    }
+    return total;
+  }
+
+  let floor = 1;
+  let bossHP = 55000; // Floor 1 Boss HP
+  const maxTime = 5 * 60; // 5 minutes in seconds
+  const attackSpeed = 0.5; // Player attacks every 0.5 seconds
+
+  while (true) {
+    let baseAttackDmg = baseDamage + (baseDamage * (bossSlayer / 100));
+
+    if (Math.random() * 100 < critChance) {
+      baseAttackDmg += baseAttackDmg * (critDamage / 100);
+    }
+
+    let skill1Total = calculateDamage(baseDamage, skill1);
+    let skill2Total = calculateDamage(baseDamage, skill2);
+    let skill3Total = calculateDamage(baseDamage, skill3);
+
+    let totalDmg = 0;
+    for (let t = 0; t < maxTime; t += attackSpeed) {
+      totalDmg += baseAttackDmg;
+      if (t % skills[skill1].cooldown === 0) totalDmg += skill1Total;
+      if (t % skills[skill2].cooldown === 0) totalDmg += skill2Total;
+      if (t % skills[skill3].cooldown === 0) totalDmg += skill3Total;
+    }
+
+    if (totalDmg < bossHP) {
+      break;
+    }
+
+    floor++;
+    bossHP += bossHP * ((floor % 20 === 0) ? 0.21 : 0.10);
+  }
+
+  const embed = new EmbedBuilder()
+    .setColor('Red')
+    .setTitle('🏰 Maximum Floor Calculator 🏰')
+    .setDescription(`You can reach up to **Floor ${floor - 1}** in the Boss Rush!`)
+    .setThumbnail('https://static.wikia.nocookie.net/crusadersroblox/images/2/2b/Boss_Rush.png/revision/latest?cb=20250312123000')
+    .addFields(
+      { name: 'Base Damage', value: `${baseDamage}`, inline: true },
+      { name: 'Boss Slayer Bonus', value: `${bossSlayer}%`, inline: true },
+      { name: 'Critical Chance', value: `${critChance}%`, inline: true },
+      { name: 'Critical Damage', value: `${critDamage}%`, inline: true },
+      { name: '🌀 Selected Skills', value: `1️⃣ ${skill1}\n2️⃣ ${skill2}\n3️⃣ ${skill3}`, inline: false }
+    )
+    .setTimestamp();
+
+  await interaction.reply({ content: `Hey <@${interaction.user.id}>!`, embeds: [embed] });
+}
+  
 if (commandName === 'calc-runs') {
     const currentLevel = interaction.options.getNumber('current-level');
     const goalLevel = interaction.options.getNumber('goal-level');

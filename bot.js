@@ -265,7 +265,7 @@ if (commandName === 'calc-floor') {
     .setColor('Red')
     .setTitle('🏰 Maximum Floor Calculator 🏰')
     .setDescription(`You can reach up to **Floor ${floor - 1}** in the Boss Rush!`)
-    .setThumbnail('https://static.wikia.nocookie.net/crusadersroblox/images/2/2b/Boss_Rush.png/revision/latest?cb=20250312123000')
+    .setImage('https://static.wikia.nocookie.net/crusadersroblox/images/2/2b/Boss_Rush.png/revision/latest?cb=20250312123000')
     .addFields(
       { name: 'Base Damage', value: `${baseDamage}`, inline: true },
       { name: 'Boss Slayer Bonus', value: `${bossSlayer}%`, inline: true },

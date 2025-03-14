@@ -279,6 +279,7 @@ client.on('interactionCreate', async interaction => {
     const embed = new EmbedBuilder()
         .setColor('Gold')
         .setTitle(`⚔️ ${skillName} Damage Calculation ⚔️`)
+        .setThumbnail('https://static.wikia.nocookie.net/crusadersroblox/images/1/17/Bot.png')
         .addFields(
             { name: '🔸 No Criticals', value: `**${totalNormalDamage}**`, inline: true },
             { name: '🔸 Full Criticals', value: `**${totalCriticalDamage}**`, inline: true }
@@ -323,6 +324,7 @@ client.on('interactionCreate', async interaction => {
     const embed = new EmbedBuilder()
       .setColor('Blue')
       .setTitle('Base Stat Calculator')
+      .setThumbnail('https://static.wikia.nocookie.net/crusadersroblox/images/1/17/Bot.png')
       .setDescription(`With **${currStat}** current stat and **${currUpg}** upgrades, the base stat is **${baseStat}**.`)
       .setTimestamp();
 
@@ -392,6 +394,7 @@ if (commandName === 'calc-floor') {
     .setTitle('🏰 Maximum Floor Calculator 🏰')
     .setDescription(`On AVERAGE you can reach up to **Floor ${floor - 1}** in the Boss Rush!`)
     .setImage('https://static.wikia.nocookie.net/crusadersroblox/images/2/2b/Boss_Rush.png/revision/latest?cb=20250312123000')
+    .setThumbnail('https://static.wikia.nocookie.net/crusadersroblox/images/1/17/Bot.png')
     .addFields(
       { name: 'Base Damage', value: `${baseDamage}`, inline: true },
       { name: 'Boss Slayer Bonus', value: `${bossSlayer}%`, inline: true },

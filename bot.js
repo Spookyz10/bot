@@ -220,14 +220,22 @@ if (commandName === 'calc-floor') {
   const skill3 = interaction.options.getString('skill3');
 
   function calculateDamage(base, skill) {
-    let total = (skills[skill].baseDmg + (base * (skills[skill].pct / 100))) * skills[skill].ticks;
-    total += total * (bossSlayer / 100);
+    let skillData = skills[skill];  
+    let total = 0;
 
-    if (Math.random() * 100 < critChance) {
-      total += total * (critDamage / 100);
+    if (skillData.ticks === 0) return 0;
+
+    for (let i = 0; i < skillData.ticks; i++) {
+        let tickDamage = skillData.baseDmg + (base * (skillData.pct / 100));
+        tickDamage += tickDamage * (bossSlayer / 100);
+        if (Math.random() * 100 < critChance) {
+            tickDamage += tickDamage * (critDamage / 100);
+        }
+        total += tickDamage;
     }
     return total;
-  }
+}
+
 
   let floor = 1;
   let bossHP = 55000; // Floor 1 Boss HP

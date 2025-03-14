@@ -311,7 +311,6 @@ client.on('interactionCreate', async interaction => {
 
     await interaction.reply({ content: `Hey <@${interaction.user.id}>! Make sure you put your stats based on the player card!`, embeds: [embed] });
     }
-}
 
 
   if (commandName === 'find-basestat') {

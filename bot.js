@@ -114,11 +114,12 @@ client.once('ready', async () => {
       .addNumberOption(option =>
         option.setName('crit-damage').setDescription('Critical Damage %').setRequired(true))
       .addNumberOption(option =>
+        option.setName('crit-chance').setDescription('Critical Chance %').setRequired(true))
+      .addNumberOption(option =>
         option.setName('boss-slayer').setDescription('Boss Slayer %').setRequired(false))
       .addNumberOption(option =>
-        option.setName('crowd-control').setDescription('Crowd Control %').setRequired(false))
-      .addNumberOption(option =>
-        option.setName('crit-chance').setDescription('Critical Chance %').setRequired(false)),
+        option.setName('crowd-control').setDescription('Crowd Control %').setRequired(false)),
+      
 
     new SlashCommandBuilder()
       .setName('calc-runs')
@@ -279,31 +280,31 @@ client.on('interactionCreate', async interaction => {
         .setColor('Gold')
         .setTitle(`⚔️ ${skillName} Damage Calculation ⚔️`)
         .addFields(
-            { name: '🔸 No Criticals', value: `**${totalNormalDamage.toFixed(2)}**`, inline: true },
-            { name: '🔸 Full Criticals', value: `**${totalCriticalDamage.toFixed(2)}**`, inline: true }
+            { name: '🔸 No Criticals', value: `**${totalNormalDamage}**`, inline: true },
+            { name: '🔸 Full Criticals', value: `**${totalCriticalDamage}**`, inline: true }
         );
 
     if (ticks >= 2) {
-        embed.addFields({ name: `🔸 Avg Criticals (${critChance}% Chance)`, value: `**${totalAvgCriticalDamage.toFixed(2)}**`, inline: true });
+        embed.addFields({ name: `🔸 Avg Criticals (${critChance}% Chance)`, value: `**${totalAvgCriticalDamage}**`, inline: true });
     }
 
     if (bossSlayer) {
         embed.addFields(
-            { name: '👹 Damage vs Bosses (No Crits)', value: `**${totalBossDamage.toFixed(2)}**`, inline: true },
-            { name: '👹 Damage vs Bosses (Full Crits)', value: `**${totalBossCriticalDamage.toFixed(2)}**`, inline: true }
+            { name: '👹 Damage vs Bosses (No Crits)', value: `**${totalBossDamage}**`, inline: true },
+            { name: '👹 Damage vs Bosses (Full Crits)', value: `**${totalBossCriticalDamage}**`, inline: true }
         );
         if (ticks >= 2) {
-            embed.addFields({ name: '👹 Damage vs Bosses (Avg Crits)', value: `**${totalBossAvgCriticalDamage.toFixed(2)}**`, inline: true });
+            embed.addFields({ name: '👹 Damage vs Bosses (Avg Crits)', value: `**${totalBossAvgCriticalDamage}**`, inline: true });
         }
     }
 
     if (crowdControl) {
         embed.addFields(
-            { name: '👾 Damage vs Mobs (No Crits)', value: `**${totalCrowdDamage.toFixed(2)}**`, inline: true },
-            { name: '👾 Damage vs Mobs (Full Crits)', value: `**${totalCrowdCriticalDamage.toFixed(2)}**`, inline: true }
+            { name: '👾 Damage vs Mobs (No Crits)', value: `**${totalCrowdDamage}**`, inline: true },
+            { name: '👾 Damage vs Mobs (Full Crits)', value: `**${totalCrowdCriticalDamage}**`, inline: true }
         );
         if (ticks >= 2) {
-            embed.addFields({ name: '👾 Damage vs Mobs (Avg Crits)', value: `**${totalCrowdAvgCriticalDamage.toFixed(2)}**`, inline: true });
+            embed.addFields({ name: '👾 Damage vs Mobs (Avg Crits)', value: `**${totalCrowdAvgCriticalDamage}**`, inline: true });
         }
     }
 

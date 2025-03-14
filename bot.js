@@ -238,40 +238,40 @@ client.on('interactionCreate', async interaction => {
     let totalCrowdAvgCriticalDamage = 0;
 
     for (let i = 0; i < ticks; i++) {
-        let tickDamage = skill.baseDmg + (baseStat * (skill.pct / 100));
-        let critTickDamage = tickDamage + (tickDamage * (critDamage / 100));
-
-        totalNormalDamage += tickDamage;
-        totalCriticalDamage += critTickDamage;
-
+        let tickDamage = Math.floor(skill.baseDmg + (baseStat * (skill.pct / 100)));
+        let critTickDamage = Math.floor(tickDamage + (tickDamage * (critDamage / 100)));
+        
+        totalNormalDamage += Math.floor(tickDamage);
+        totalCriticalDamage += Math.floor(critTickDamage);
+        
         if (Math.random() * 100 < critChance) {
-            totalAvgCriticalDamage += critTickDamage;
+            totalAvgCriticalDamage += Math.floor(critTickDamage);
         } else {
-            totalAvgCriticalDamage += tickDamage;
+            totalAvgCriticalDamage += Math.floor(tickDamage);
         }
-
-        let bossTickDamage = tickDamage + (tickDamage * (bossSlayer / 100));
-        let bossCritTickDamage = bossTickDamage + (bossTickDamage * (critDamage / 100));
-
-        totalBossDamage += bossTickDamage;
-        totalBossCriticalDamage += bossCritTickDamage;
-
+        
+        let bossTickDamage = Math.floor(tickDamage + (tickDamage * (bossSlayer / 100)));
+        let bossCritTickDamage = Math.floor(bossTickDamage + (bossTickDamage * (critDamage / 100)));
+        
+        totalBossDamage += Math.floor(bossTickDamage);
+        totalBossCriticalDamage += Math.floor(bossCritTickDamage);
+        
         if (Math.random() * 100 < critChance) {
-            totalBossAvgCriticalDamage += bossCritTickDamage;
+            totalBossAvgCriticalDamage += Math.floor(bossCritTickDamage);
         } else {
-            totalBossAvgCriticalDamage += bossTickDamage;
+            totalBossAvgCriticalDamage += Math.floor(bossTickDamage);
         }
-
-        let crowdTickDamage = tickDamage + (tickDamage * (crowdControl / 100));
-        let crowdCritTickDamage = crowdTickDamage + (crowdTickDamage * (critDamage / 100));
-
-        totalCrowdDamage += crowdTickDamage;
-        totalCrowdCriticalDamage += crowdCritTickDamage;
-
+        
+        let crowdTickDamage = Math.floor(tickDamage + (tickDamage * (crowdControl / 100)));
+        let crowdCritTickDamage = Math.floor(crowdTickDamage + (crowdTickDamage * (critDamage / 100)));
+        
+        totalCrowdDamage += Math.floor(crowdTickDamage);
+        totalCrowdCriticalDamage += Math.floor(crowdCritTickDamage);
+        
         if (Math.random() * 100 < critChance) {
-            totalCrowdAvgCriticalDamage += crowdCritTickDamage;
+            totalCrowdAvgCriticalDamage += Math.floor(crowdCritTickDamage);
         } else {
-            totalCrowdAvgCriticalDamage += crowdTickDamage;
+            totalCrowdAvgCriticalDamage += Math.floor(crowdTickDamage);
         }
     }
 

@@ -110,7 +110,7 @@ client.once('ready', async () => {
         option.setName('base-stat').setDescription('Your magical/physical stat').setRequired(true))
       .addStringOption(option =>
         option.setName('skill').setDescription('Select a skill').setRequired(true)
-          .addChoices(...Object.keys(skills).map(skill => ({ name: skill, value: skill })))))
+          .addChoices(...Object.keys(skills).map(skill => ({ name: skill, value: skill }))))
       .addNumberOption(option =>
         option.setName('crit-damage').setDescription('Critical Damage %').setRequired(true))
       .addNumberOption(option =>
@@ -354,7 +354,6 @@ if (commandName === 'calc-floor') {
     }
     return total;
 }
-
 
   let floor = 1;
   let bossHP = 55000; // Floor 1 Boss HP

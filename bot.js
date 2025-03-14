@@ -104,6 +104,23 @@ client.once('ready', async () => {
         option.setName('item-level').setDescription('Item level').setRequired(true)),
 
     new SlashCommandBuilder()
+      .setName('calc-skilldmg')
+      .setDescription('Calculates skill damage')
+      .addNumberOption(option =>
+        option.setName('base-stat').setDescription('Your magical/physical stat').setRequired(true))
+      .addStringOption(option =>
+        option.setName('skill').setDescription('Select a skill').setRequired(true)
+          .addChoices(...Object.keys(skills).map(skill => ({ name: skill, value: skill })))))
+      .addNumberOption(option =>
+        option.setName('crit-damage').setDescription('Critical Damage %').setRequired(true))
+      .addNumberOption(option =>
+        option.setName('boss-slayer').setDescription('Boss Slayer %').setRequired(false))
+      .addNumberOption(option =>
+        option.setName('crowd-control').setDescription('Crowd Control %').setRequired(false))
+      .addNumberOption(option =>
+        option.setName('crit-chance').setDescription('Critical Chance %').setRequired(false)),
+
+    new SlashCommandBuilder()
       .setName('calc-runs')
       .setDescription('Calculates dungeon runs needed')
       .addNumberOption(option =>
@@ -147,7 +164,7 @@ client.once('ready', async () => {
       .setName('calc-floor')
       .setDescription('Calculates the max floor you can reach in the Boss Rush')
       .addNumberOption(option =>
-        option.setName('base-damage').setDescription('Your base attack damage').setRequired(true))
+        option.setName('base-damage').setDescription('Your magical/physical stat').setRequired(true))
       .addNumberOption(option =>
         option.setName('boss-slayer').setDescription('% of your boss slayer trait').setRequired(true))
       .addNumberOption(option =>
@@ -194,6 +211,107 @@ client.on('interactionCreate', async interaction => {
 
     await interaction.reply({ content: `Hey <@${interaction.user.id}>`, embeds: [embed] });
   }
+
+  if (commandName === 'calc-skilldmg') {
+    const baseStat = interaction.options.getNumber('base-stat');
+    const skillName = interaction.options.getString('skill');
+    const critChance = interaction.options.getNumber('crit-chance');
+    const critDamage = interaction.options.getNumber('crit-damage');
+    const bossSlayer = interaction.options.getNumber('boss-slayer') || 0;
+    const crowdControl = interaction.options.getNumber('crowd-control') || 0;
+
+    if (!skills[skillName]) {
+        return interaction.reply({ content: 'Invalid skill!', ephemeral: true });
+    }
+
+    const skill = skills[skillName];
+    const ticks = skill.ticks || 1;
+
+    let totalNormalDamage = 0;
+    let totalCriticalDamage = 0;
+    let totalAvgCriticalDamage = 0;
+    let totalBossDamage = 0;
+    let totalBossCriticalDamage = 0;
+    let totalBossAvgCriticalDamage = 0;
+    let totalCrowdDamage = 0;
+    let totalCrowdCriticalDamage = 0;
+    let totalCrowdAvgCriticalDamage = 0;
+
+    for (let i = 0; i < ticks; i++) {
+        let tickDamage = skill.baseDmg + (baseStat * (skill.pct / 100));
+        let critTickDamage = tickDamage + (tickDamage * (critDamage / 100));
+
+        totalNormalDamage += tickDamage;
+        totalCriticalDamage += critTickDamage;
+
+        if (Math.random() * 100 < critChance) {
+            totalAvgCriticalDamage += critTickDamage;
+        } else {
+            totalAvgCriticalDamage += tickDamage;
+        }
+
+        let bossTickDamage = tickDamage + (tickDamage * (bossSlayer / 100));
+        let bossCritTickDamage = bossTickDamage + (bossTickDamage * (critDamage / 100));
+
+        totalBossDamage += bossTickDamage;
+        totalBossCriticalDamage += bossCritTickDamage;
+
+        if (Math.random() * 100 < critChance) {
+            totalBossAvgCriticalDamage += bossCritTickDamage;
+        } else {
+            totalBossAvgCriticalDamage += bossTickDamage;
+        }
+
+        let crowdTickDamage = tickDamage + (tickDamage * (crowdControl / 100));
+        let crowdCritTickDamage = crowdTickDamage + (crowdTickDamage * (critDamage / 100));
+
+        totalCrowdDamage += crowdTickDamage;
+        totalCrowdCriticalDamage += crowdCritTickDamage;
+
+        if (Math.random() * 100 < critChance) {
+            totalCrowdAvgCriticalDamage += crowdCritTickDamage;
+        } else {
+            totalCrowdAvgCriticalDamage += crowdTickDamage;
+        }
+    }
+
+    const embed = new EmbedBuilder()
+        .setColor('Gold')
+        .setTitle(`⚔️ ${skillName} Damage Calculation ⚔️`)
+        .addFields(
+            { name: '🔸 No Criticals', value: `**${totalNormalDamage.toFixed(2)}**`, inline: true },
+            { name: '🔸 Full Criticals', value: `**${totalCriticalDamage.toFixed(2)}**`, inline: true }
+        );
+
+    if (ticks >= 2) {
+        embed.addFields({ name: `🔸 Avg Criticals (${critChance}% Chance)`, value: `**${totalAvgCriticalDamage.toFixed(2)}**`, inline: true });
+    }
+
+    if (bossSlayer) {
+        embed.addFields(
+            { name: '👹 Damage vs Bosses (No Crits)', value: `**${totalBossDamage.toFixed(2)}**`, inline: true },
+            { name: '👹 Damage vs Bosses (Full Crits)', value: `**${totalBossCriticalDamage.toFixed(2)}**`, inline: true }
+        );
+        if (ticks >= 2) {
+            embed.addFields({ name: '👹 Damage vs Bosses (Avg Crits)', value: `**${totalBossAvgCriticalDamage.toFixed(2)}**`, inline: true });
+        }
+    }
+
+    if (crowdControl) {
+        embed.addFields(
+            { name: '👾 Damage vs Mobs (No Crits)', value: `**${totalCrowdDamage.toFixed(2)}**`, inline: true },
+            { name: '👾 Damage vs Mobs (Full Crits)', value: `**${totalCrowdCriticalDamage.toFixed(2)}**`, inline: true }
+        );
+        if (ticks >= 2) {
+            embed.addFields({ name: '👾 Damage vs Mobs (Avg Crits)', value: `**${totalCrowdAvgCriticalDamage.toFixed(2)}**`, inline: true });
+        }
+    }
+
+    embed.setTimestamp();
+
+    await interaction.reply({ content: `Hey <@${interaction.user.id}>! Make sure you put your stats based on the player card!`, embeds: [embed] });
+}
+
 
   if (commandName === 'find-basestat') {
     const currStat = interaction.options.getNumber('curr-stat');
@@ -283,7 +401,7 @@ if (commandName === 'calc-floor') {
     )
     .setTimestamp();
 
-  await interaction.reply({ content: `Hey <@${interaction.user.id}>!`, embeds: [embed] });
+  await interaction.reply({ content: `Hey <@${interaction.user.id}>! Make sure you put your stats based on the player card!`, embeds: [embed] });
 }
   
 if (commandName === 'calc-runs') {

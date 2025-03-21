@@ -493,7 +493,6 @@ if (commandName === 'calc-runs') {
 });
 
 const fs = require('fs'); 
-
 const cooldowns = new Map();
 
 function loadCodes() {
@@ -519,7 +518,11 @@ client.on("messageCreate", async (message) => {
         "what are the codes?", "code?", "code"
     ];
 
-    if (codeQueries.some(query => message.content.toLowerCase().includes(query))) {
+    const cleanMessage = message.content.toLowerCase().replace(/[^\w\s]/g, "");
+
+    const regex = new RegExp(`\\b(${codeQueries.map(query => query.replace(/\?/g, '')).join("|")})\\b`, "i");
+
+    if (regex.test(cleanMessage)) {
         const userId = message.author.id;
         const now = Date.now();
         const cooldown = 10 * 1000; 
@@ -535,7 +538,7 @@ client.on("messageCreate", async (message) => {
         const codesText = activeCodes.length > 0 ? activeCodes.join("\n") : "No active codes right now.";
         let response = `<@${userId}>, the current active codes are:\n\`\`\`\n${codesText}\n\`\`\``;
 
-        if (message.content.toLowerCase().trim() === "code") {
+        if (cleanMessage === "code") {
             response += `\n(blame <@1192368074989502505> for this keyword)`;
         }
 
@@ -545,3 +548,4 @@ client.on("messageCreate", async (message) => {
 });
 
 client.login(process.env.TOKEN);
+

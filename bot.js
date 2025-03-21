@@ -523,7 +523,7 @@ client.on("messageCreate", async (message) => {
     if (regex.test(cleanMessage)) {
         const userId = message.author.id;
         const now = Date.now();
-        const cooldown = 10 * 1000; 
+        const cooldown = 30 * 1000; 
 
         if (cooldowns.has(userId) && now - cooldowns.get(userId) < cooldown) {
             console.log(`User ${message.author.tag} is on cooldown.`);
@@ -531,7 +531,7 @@ client.on("messageCreate", async (message) => {
         }
 
         cooldowns.set(userId, now);
-        setTimeout(() => cooldowns.delete(userId), 10 * 1000); 
+        setTimeout(() => cooldowns.delete(userId), 30 * 1000); 
 
         const codesText = activeCodes.length > 0 ? activeCodes.join("\n") : "No active codes right now.";
         let response = `<@${userId}>, the current active codes are:\n\`\`\`\n${codesText}\n\`\`\``;

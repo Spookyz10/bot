@@ -487,7 +487,9 @@ if (commandName === 'calc-runs') {
 });
 
 const fs = require('fs'); 
-const cooldowns = new Map(); // Stores user cooldown timestamps
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
+
+const cooldowns = new Map();
 
 function loadCodes() {
     try {
@@ -499,30 +501,26 @@ function loadCodes() {
     }
 }
 
-let activeCodes = loadCodes(); 
-
 client.on("messageCreate", async (message) => {
+    console.log(`Message received: ${message.content}`); 
     if (message.author.bot) return;
 
-    activeCodes = loadCodes();
-
+    const activeCodes = loadCodes(); 
+    
     const codeQueries = [
         "what are the codes", "codes?", "any codes?",
         "got any codes?", "any codes", "got any codes",
-        "what are the codes?", "code?", "code" 
+        "what are the codes?", "code?", "code"
     ];
 
-    if (codeQueries.some(query => message.content.toLowerCase().includes(query))) {
+    if (codeQueries.some(query => message.content.toLowerCase().trim() === query)) {
         const userId = message.author.id;
         const now = Date.now();
-        const cooldown = 10 * 1000;
+        const cooldown = 10 * 1000; 
 
-        if (cooldowns.has(userId)) {
-            const lastUsed = cooldowns.get(userId);
-            if (now - lastUsed < cooldown) return; 
-        }
+        if (cooldowns.has(userId) && now - cooldowns.get(userId) < cooldown) return;
 
-        cooldowns.set(userId, now);
+        cooldowns.set(userId, now); 
 
         const codesText = activeCodes.length > 0 ? activeCodes.join("\n") : "No active codes right now.";
         let response = `<@${userId}>, the current active codes are:\n\`\`\`\n${codesText}\n\`\`\``;

@@ -487,7 +487,6 @@ if (commandName === 'calc-runs') {
 });
 
 const fs = require('fs'); 
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
 
 const cooldowns = new Map();
 

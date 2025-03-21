@@ -1,5 +1,11 @@
 const { Client, GatewayIntentBits, SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({ 
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent
+    ] 
+});
 
 const skills = {
     "Meteor Strike": { baseDmg: 200, pct: 700, cooldown: 7, ticks: 1 },
@@ -501,7 +507,8 @@ function loadCodes() {
 }
 
 client.on("messageCreate", async (message) => {
-    console.log(`Message received: ${message.content}`); 
+    console.log(`Received message: "${message.content}" from ${message.author.tag}`);
+
     if (message.author.bot) return;
 
     const activeCodes = loadCodes(); 
@@ -512,14 +519,18 @@ client.on("messageCreate", async (message) => {
         "what are the codes?", "code?", "code"
     ];
 
-    if (codeQueries.some(query => message.content.toLowerCase().trim() === query)) {
+    if (codeQueries.some(query => message.content.toLowerCase().includes(query))) {
         const userId = message.author.id;
         const now = Date.now();
         const cooldown = 10 * 1000; 
 
-        if (cooldowns.has(userId) && now - cooldowns.get(userId) < cooldown) return;
+        if (cooldowns.has(userId) && now - cooldowns.get(userId) < cooldown) {
+            console.log(`User ${message.author.tag} is on cooldown.`);
+            return;
+        }
 
-        cooldowns.set(userId, now); 
+        cooldowns.set(userId, now);
+        setTimeout(() => cooldowns.delete(userId), 10 * 1000); 
 
         const codesText = activeCodes.length > 0 ? activeCodes.join("\n") : "No active codes right now.";
         let response = `<@${userId}>, the current active codes are:\n\`\`\`\n${codesText}\n\`\`\``;
@@ -528,6 +539,7 @@ client.on("messageCreate", async (message) => {
             response += `\n(blame <@1192368074989502505> for this keyword)`;
         }
 
+        console.log(`Sending response to ${message.author.tag}`);
         await message.channel.send(response);
     }
 });

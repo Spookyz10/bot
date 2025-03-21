@@ -506,8 +506,6 @@ function loadCodes() {
 }
 
 client.on("messageCreate", async (message) => {
-    console.log(`Received message: "${message.content}" from ${message.author.tag}`);
-
     if (message.author.bot) return;
 
     const activeCodes = loadCodes(); 

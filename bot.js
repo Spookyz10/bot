@@ -525,6 +525,10 @@ client.on("messageCreate", async (message) => {
         const now = Date.now();
         const cooldown = 30 * 1000; 
 
+        if (userId === '529223367077658655') {
+            return;
+        }       
+        
         if (cooldowns.has(userId) && now - cooldowns.get(userId) < cooldown) {
             console.log(`User ${message.author.tag} is on cooldown.`);
             return;
@@ -537,7 +541,7 @@ client.on("messageCreate", async (message) => {
         let response = `<@${userId}>, the current active codes are:\n\`\`\`\n${codesText}\n\`\`\``;
 
         if (cleanMessage === "code") {
-            response += `\n(blame <@1192368074989502505> for this keyword)`;
+            response += `\n(sorry for this keyword)`;
         }
 
         console.log(`Sending response to ${message.author.tag}`);

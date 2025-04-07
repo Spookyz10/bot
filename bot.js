@@ -511,9 +511,9 @@ client.on("messageCreate", async (message) => {
     const activeCodes = loadCodes(); 
     
     const codeQueries = [
-        "what are the codes", "codes?", "any codes?",
-        "got any codes?", "any codes", "got any codes",
-        "what are the codes?", "code?", "code"
+        "what are the codes", "!codes",
+        "got any codes?",
+        "what are the codes?", "!code"
     ];
 
     const cleanMessage = message.content.toLowerCase().replace(/[^\w\s]/g, "");

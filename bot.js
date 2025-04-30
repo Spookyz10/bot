@@ -516,10 +516,10 @@ client.on("messageCreate", async (message) => {
     "what are the codes?", "!code"
     ]
 
-    const cleanMessage = message.content.toLowerCase();
+    const cleanMessage = message.content.toLowerCase().replace(/[^\w\s!]/g, "");
 
-    const regex = new RegExp(`\\b(${codeQueries.map(query => query.replace(/\?/g, '')).join("|")})\\b`, "i");
-
+    const regex = new RegExp(`\\b(${codeQueries.join("|")})\\b`, "i");
+    
     if (regex.test(cleanMessage)) {
         const userId = message.author.id;
         const now = Date.now();

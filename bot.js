@@ -528,7 +528,6 @@ client.on("messageCreate", async (message) => {
         }
 
         if (cooldowns.has(userId) && now - cooldowns.get(userId) < cooldown) {
-            console.log(`User ${message.author.tag} is on cooldown.`);
             return;
         }
 
@@ -538,11 +537,6 @@ client.on("messageCreate", async (message) => {
         const codesText = activeCodes.length > 0 ? activeCodes.join("\n") : "No active codes right now.";
         let response = `<@${userId}>, the current active codes are:\n\`\`\`\n${codesText}\n\`\`\``;
 
-        if (lowerMsg.trim() === "!code" || lowerMsg.trim() === "!codes") {
-            response += `\n(sorry for this keyword)`;
-        }
-
-        console.log(`Sending response to ${message.author.tag}`);
         await message.channel.send(response);
     }
 });

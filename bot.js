@@ -508,39 +508,37 @@ function loadCodes() {
 client.on("messageCreate", async (message) => {
     if (message.author.bot) return;
 
-    const activeCodes = loadCodes(); 
-    
+    const activeCodes = loadCodes();
+
+    // Define valid triggers (lowercase, no punctuation required)
     const codeQueries = [
-    "what are the codes", "!codes",
-    "got any codes?",
-    "what are the codes?", "!code"
-    ]
+        "what are the codes", "!codes", "got any codes", "what are the codes", "!code"
+    ];
 
-    const cleanMessage = message.content.toLowerCase().replace(/[^\w\s!]/g, "");
+    const lowerMsg = message.content.toLowerCase();
 
-    const regex = new RegExp(`\\b(${codeQueries.join("|")})\\b`, "i");
-    
-    if (regex.test(cleanMessage)) {
+    // If any query matches
+    if (codeQueries.some(q => lowerMsg.includes(q))) {
         const userId = message.author.id;
         const now = Date.now();
-        const cooldown = 30 * 1000; 
+        const cooldown = 30 * 1000;
 
         if (userId === '529223367077658655') {
             return;
-        }       
-        
+        }
+
         if (cooldowns.has(userId) && now - cooldowns.get(userId) < cooldown) {
             console.log(`User ${message.author.tag} is on cooldown.`);
             return;
         }
 
         cooldowns.set(userId, now);
-        setTimeout(() => cooldowns.delete(userId), 30 * 1000); 
+        setTimeout(() => cooldowns.delete(userId), 30 * 1000);
 
         const codesText = activeCodes.length > 0 ? activeCodes.join("\n") : "No active codes right now.";
         let response = `<@${userId}>, the current active codes are:\n\`\`\`\n${codesText}\n\`\`\``;
 
-        if (cleanMessage === "code") {
+        if (lowerMsg.trim() === "!code" || lowerMsg.trim() === "!codes") {
             response += `\n(sorry for this keyword)`;
         }
 

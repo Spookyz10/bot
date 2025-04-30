@@ -514,10 +514,9 @@ client.on("messageCreate", async (message) => {
     "what are the codes", "!codes",
     "got any codes?",
     "what are the codes?", "!code"
-].map(q => q.toLowerCase().replace(/[^\w\s]/g, ""));
+    ]
 
-
-    const cleanMessage = message.content.toLowerCase().replace(/[^\w\s]/g, "");
+    const cleanMessage = message.content.toLowerCase();
 
     const regex = new RegExp(`\\b(${codeQueries.map(query => query.replace(/\?/g, '')).join("|")})\\b`, "i");
 

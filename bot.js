@@ -576,18 +576,37 @@ const eightBallResponses = [
 const cooldown1 = new Set();
 
 const battleCooldown = new Set();
-const battleOutcomes = [
-    "{winner} defeated {loser} with a single sarcastic comment.",
-    "{loser} tripped over their own ego, {winner} wins effortlessly.",
-    "{winner} wins by distracting {loser} with memes.",
-    "{loser} called for backup... it never arrived. {winner} takes the win.",
-    "{winner} hit a critical pun! {loser} couldn't recover.",
-    "{loser} got lost mid-fight. {winner} wins by default.",
-    "{winner} wins with style points. {loser} didn't even try.",
-    "{loser} rage quit. {winner} takes the victory.",
-    "An intense fight, but {winner} emerges victorious!",
-    "{winner} dropped the mic. {loser} didn’t even have a comeback."
+const userBattleOutcomes = [
+    "{winner} dropkicked {loser} into the Shadow Realm.",
+    "{loser} tried to fight back, but accidentally muted themselves. {winner} wins!",
+    "{winner} threw a banana peel. {loser} slipped and faceplanted.",
+    "{loser} challenged {winner} to a dance-off. Bad idea.",
+    "{winner} won using pure sarcasm. {loser} couldn’t cope.",
+    "{loser} brought a spoon to a sword fight. {winner} wins by default.",
+    "It was close, but {winner} yelled louder. {loser} gave up.",
+    "{loser} tripped while typing `/battle`. {winner} seizes victory.",
+    "{winner} posted a cringe meme. {loser} self-destructed.",
+    "{loser} said 'ez'. The gods smited them. {winner} wins.",
+    "{winner} won after {loser} got distracted watching anime.",
+    "{loser} got ratio’d mid-battle. {winner} wins."
 ];
+
+const battleVsRoleWin = [
+    "{winner} just soloed {role}! Absolute legend.",
+    "{winner} took on {role}... and won without breaking a sweat.",
+    "{role} stood no chance. {winner} walks away victorious.",
+    "Against all odds, {winner} obliterated {role}.",
+    "{winner} clapped the entirety of {role}. No survivors."
+];
+
+const battleVsRoleLose = [
+    "{winner} tried to fight {role}... they lasted 2 seconds.",
+    "{role} obliterated {winner} in record time.",
+    "{winner} picked a fight with {role}. Bad move.",
+    "{role} didn’t even flinch. {winner} got steamrolled.",
+    "Legend says {winner} is still recovering from challenging {role}."
+];
+
 
 client.on('messageCreate', message => {
     if (message.author.bot) return;
@@ -614,38 +633,64 @@ client.on('messageCreate', message => {
 
     // --- BATTLE ---
     if (message.content.startsWith('!battle')) {
-        const userId = message.author.id;
-        const mentionedUser = message.mentions.users.first();
+    const userId = message.author.id;
+    const mentionedUser = message.mentions.users.first();
+    const mentionedRole = message.mentions.roles.first();
 
-        if (!mentionedUser) {
-            return message.reply("⚔️ You need to mention someone to battle! Usage: `!battle @username`");
-        }
+    if (!mentionedUser && !mentionedRole) {
+        return message.reply("⚔️ You need to mention a user or a role to battle! Usage: `!battle @username` or `!battle @role`");
+    }
 
-        const targetId = mentionedUser.id;
+    // Handle self-battle
+    if (mentionedUser && mentionedUser.id === userId) {
+        return message.reply("🤨 You can't battle yourself. Try someone else.");
+    }
 
-        // Prevent battling self
-        if (userId === targetId) {
-            return message.reply("🤨 You can't battle yourself. Try someone else.");
-        }
+    const targetId = mentionedUser ? mentionedUser.id : mentionedRole.id;
 
-        // Check cooldowns
-        if (battleCooldown.has(userId) || battleCooldown.has(targetId)) {
-            return message.reply("⏳ One of you is still recovering from a previous battle. Try again in a bit!");
-        }
+    if (battleCooldown.has(userId) || battleCooldown.has(targetId)) {
+        return message.reply("⏳ One of you is still recovering from a previous battle. Try again in a bit!");
+    }
 
-        // Randomly pick winner and loser
+    let outcome = "";
+
+    if (mentionedUser) {
+        // User vs User
         const [winner, loser] = Math.random() < 0.5
             ? [message.author, mentionedUser]
             : [mentionedUser, message.author];
 
-        const outcomeTemplate = battleOutcomes[Math.floor(Math.random() * battleOutcomes.length)];
-        const outcome = outcomeTemplate
+        const outcomeTemplate = userBattleOutcomes[Math.floor(Math.random() * userBattleOutcomes.length)];
+        outcome = outcomeTemplate
             .replace('{winner}', `**${winner.username}**`)
             .replace('{loser}', `**${loser.username}**`);
 
-        message.channel.send(`⚔️ ${outcome}`);
+        // Apply cooldown to both
+        battleCooldown.add(userId);
+        battleCooldown.add(targetId);
+        setTimeout(() => {
+            battleCooldown.delete(userId);
+            battleCooldown.delete(targetId);
+        }, 30000);
+    } else if (mentionedRole) {
+        // User vs Role
+        const didWin = Math.random() < 0.5;
+        const roleName = `**${mentionedRole.name}**`;
+        const winnerName = `**${message.author.username}**`;
 
-        // Add both to cooldown
+        if (didWin) {
+            const winTemplate = battleVsRoleWin[Math.floor(Math.random() * battleVsRoleWin.length)];
+            outcome = winTemplate
+                .replace('{winner}', winnerName)
+                .replace('{role}', roleName);
+        } else {
+            const loseTemplate = battleVsRoleLose[Math.floor(Math.random() * battleVsRoleLose.length)];
+            outcome = loseTemplate
+                .replace('{winner}', winnerName)
+                .replace('{role}', roleName);
+        }
+
+        // Apply cooldown to user and role ID
         battleCooldown.add(userId);
         battleCooldown.add(targetId);
         setTimeout(() => {
@@ -653,6 +698,9 @@ client.on('messageCreate', message => {
             battleCooldown.delete(targetId);
         }, 30000);
     }
+
+    message.channel.send(`⚔️ ${outcome}`);
+}
 });
 
 

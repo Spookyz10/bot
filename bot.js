@@ -542,5 +542,45 @@ client.on("messageCreate", async (message) => {
     }
 });
 
+const eightBallResponses = [
+    "Absolutely... in an alternate universe.",
+    "Ask your toaster, it might know.",
+    "100% maybe.",
+    "Reply hazy, try yelling louder.",
+    "It is certain—according to my cat.",
+    "Why not? Chaos is fun.",
+    "Outlook not so groovy.",
+    "Better not tell you, it's classified.",
+    "Try again after a nap.",
+    "The stars say 'meh'.",
+    "Only on Tuesdays.",
+    "Yes... but also no.",
+    "Ask your neighbour."
+];
+
+const cooldown1 = new Set();
+
+client.on('messageCreate', message => {
+    if (!message.content.startsWith('!8ball') || message.author.bot) return;
+
+    const userId = message.author.id;
+
+    if (cooldown1.has(userId)) {
+        return 
+    }
+
+    const question = message.content.slice(6).trim();
+    if (!question) {
+        return message.reply("❓ You need to ask a question! Usage: `!8ball <your question>`");
+    }
+
+    const response = eightBallResponses[Math.floor(Math.random() * eightBallResponses.length)];
+    message.reply(`🎱 ${response}`);
+
+    cooldown1.add(userId);
+    setTimeout(() => cooldown1.delete(userId), 7000);
+});
+
+
 client.login(process.env.TOKEN);
 

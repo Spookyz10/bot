@@ -543,20 +543,35 @@ client.on("messageCreate", async (message) => {
 });
 
 const eightBallResponses = [
-    "Absolutely... in an alternate universe.",
-    "Ask your toaster, it might know.",
-    "100% maybe.",
-    "Reply hazy, try yelling louder.",
-    "It is certain—according to my cat.",
-    "Why not? Chaos is fun.",
-    "Outlook not so groovy.",
-    "Better not tell you, it's classified.",
-    "Try again after a nap.",
-    "The stars say 'meh'.",
-    "Only on Tuesdays.",
-    "Yes... but also no.",
-    "Ask your neighbour."
+    "Without a doubt.",
+    "Yes, but only if you truly believe.",
+    "The answer lies within you.",
+    "Absolutely — if the stars align.",
+    "Not today, but soon.",
+    "Unclear. Ask again with purpose.",
+    "Only if you're willing to risk it.",
+    "I wouldn’t count on it.",
+    "Yes, and the universe agrees.",
+    "Doubtful, but miracles happen.",
+    "In time, all will be revealed.",
+    "No — but what if you made it a yes?",
+    "You're not ready for that answer.",
+    "Possibly, if fate allows.",
+    "It's looking very likely.",
+    "Too close to call — try again later.",
+    "The signs point to yes.",
+    "Something tells me... no.",
+    "It depends on how you ask.",
+    "Only when the moment is right.",
+    "Yes — but don’t tell anyone.",
+    "No — and that's probably for the best.",
+    "A strong maybe.",
+    "Focus and ask again.",
+    "That's a secret between you and destiny.",
+    "Hold up let me ask Froggyz................. he said 'YEAH MAN!!!!!!!!!!'",
+    "Hold up let me ask Froggyz................. he said 'go to a mental asylum man.'"
 ];
+
 
 const cooldown1 = new Set();
 
@@ -571,6 +586,8 @@ client.on('messageCreate', message => {
 
     const question = message.content.slice(6).trim();
     if (!question) {
+        cooldown1.add(userId);
+        setTimeout(() => cooldown1.delete(userId), 3000);
         return message.reply("❓ You need to ask a question! Usage: `!8ball <your question>`");
     }
 

@@ -575,27 +575,84 @@ const eightBallResponses = [
 
 const cooldown1 = new Set();
 
+const battleCooldown = new Set();
+const battleOutcomes = [
+    "{winner} defeated {loser} with a single sarcastic comment.",
+    "{loser} tripped over their own ego, {winner} wins effortlessly.",
+    "{winner} wins by distracting {loser} with memes.",
+    "{loser} called for backup... it never arrived. {winner} takes the win.",
+    "{winner} hit a critical pun! {loser} couldn't recover.",
+    "{loser} got lost mid-fight. {winner} wins by default.",
+    "{winner} wins with style points. {loser} didn't even try.",
+    "{loser} rage quit. {winner} takes the victory.",
+    "An intense fight, but {winner} emerges victorious!",
+    "{winner} dropped the mic. {loser} didn’t even have a comeback."
+];
+
 client.on('messageCreate', message => {
-    if (!message.content.startsWith('!8ball') || message.author.bot) return;
+    if (message.author.bot) return;
 
-    const userId = message.author.id;
+    // --- 8BALL ---
+    if (message.content.startsWith('!8ball')) {
+        const userId = message.author.id;
 
-    if (cooldown1.has(userId)) {
-        return 
-    }
+        if (cooldown1.has(userId)) return;
 
-    const question = message.content.slice(6).trim();
-    if (!question) {
+        const question = message.content.slice(6).trim();
+        if (!question) {
+            cooldown1.add(userId);
+            setTimeout(() => cooldown1.delete(userId), 3000);
+            return message.reply("❓ You need to ask a question! Usage: `!8ball <your question>`");
+        }
+
+        const response = eightBallResponses[Math.floor(Math.random() * eightBallResponses.length)];
+        message.reply(`🎱 ${response}`);
+
         cooldown1.add(userId);
-        setTimeout(() => cooldown1.delete(userId), 3000);
-        return message.reply("❓ You need to ask a question! Usage: `!8ball <your question>`");
+        setTimeout(() => cooldown1.delete(userId), 7000);
     }
 
-    const response = eightBallResponses[Math.floor(Math.random() * eightBallResponses.length)];
-    message.reply(`🎱 ${response}`);
+    // --- BATTLE ---
+    if (message.content.startsWith('!battle')) {
+        const userId = message.author.id;
+        const mentionedUser = message.mentions.users.first();
 
-    cooldown1.add(userId);
-    setTimeout(() => cooldown1.delete(userId), 7000);
+        if (!mentionedUser) {
+            return message.reply("⚔️ You need to mention someone to battle! Usage: `!battle @username`");
+        }
+
+        const targetId = mentionedUser.id;
+
+        // Prevent battling self
+        if (userId === targetId) {
+            return message.reply("🤨 You can't battle yourself. Try someone else.");
+        }
+
+        // Check cooldowns
+        if (battleCooldown.has(userId) || battleCooldown.has(targetId)) {
+            return message.reply("⏳ One of you is still recovering from a previous battle. Try again in a bit!");
+        }
+
+        // Randomly pick winner and loser
+        const [winner, loser] = Math.random() < 0.5
+            ? [message.author, mentionedUser]
+            : [mentionedUser, message.author];
+
+        const outcomeTemplate = battleOutcomes[Math.floor(Math.random() * battleOutcomes.length)];
+        const outcome = outcomeTemplate
+            .replace('{winner}', `**${winner.username}**`)
+            .replace('{loser}', `**${loser.username}**`);
+
+        message.channel.send(`⚔️ ${outcome}`);
+
+        // Add both to cooldown
+        battleCooldown.add(userId);
+        battleCooldown.add(targetId);
+        setTimeout(() => {
+            battleCooldown.delete(userId);
+            battleCooldown.delete(targetId);
+        }, 30000);
+    }
 });
 
 

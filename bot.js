@@ -607,36 +607,32 @@ const battleVsRoleLose = [
     "Legend says {winner} is still recovering from challenging {role}."
 ];
 
-
-client.on('messageCreate', message => {
+client.on('messageCreate', async message => {
     if (message.author.bot) return;
+
+    const userId = message.author.id;
 
     // --- 8BALL ---
     if (message.content.startsWith('!8ball')) {
-        const userId = message.author.id;
-
         if (cooldown1.has(userId)) {
-    message.reply("⏳ You're on cooldown! Please wait a few seconds.").then(sentMessage => {
-        setTimeout(() => {
-            message.delete().catch(() => {});
-            sentMessage.delete().catch(() => {});
-        }, 3000);
-    });
-    return;
-}
-
+            const sent = await message.reply("⏳ You're on cooldown! Please wait a few seconds.");
+            setTimeout(() => {
+                message.delete().catch(() => {});
+                sent.delete().catch(() => {});
+            }, 3000);
+            return;
+        }
 
         const question = message.content.slice(6).trim();
         if (!question) {
             cooldown1.add(userId);
+            const sent = await message.reply("❓ You need to ask a question! Usage: `!8ball <your question>`");
+            setTimeout(() => {
+                message.delete().catch(() => {});
+                sent.delete().catch(() => {});
+            }, 3000);
             setTimeout(() => cooldown1.delete(userId), 3000);
-            message.reply("❓ You need to ask a question! Usage: `!8ball <your question>`").then(sentMessage => {
-    setTimeout(() => {
-        message.delete().catch(() => {});
-        sentMessage.delete().catch(() => {});
-    }, 3000);
-});
-
+            return;
         }
 
         const response = eightBallResponses[Math.floor(Math.random() * eightBallResponses.length)];
@@ -648,82 +644,81 @@ client.on('messageCreate', message => {
 
     // --- BATTLE ---
     if (message.content.startsWith('!battle')) {
-    const userId = message.author.id;
-    const mentionedUser = message.mentions.users.first();
-    const mentionedRole = message.mentions.roles.first();
+        const mentionedUser = message.mentions.users.first();
+        const mentionedRole = message.mentions.roles.first();
 
-    if (!mentionedUser && !mentionedRole) {
-        return message.reply("⚔️ You need to mention a user or a role to battle! Usage: `!battle @username` or `!battle @role`");
-    }
-
-    // Handle self-battle
-    if (mentionedUser && mentionedUser.id === userId) {
-        return message.reply("🤨 You can't battle yourself. Try someone else.");
-    }
-
-    const targetId = mentionedUser ? mentionedUser.id : mentionedRole.id;
-
-    if (battleCooldown.has(userId) || battleCooldown.has(targetId)) {
-    message.reply("⏳ One of you is still recovering from a previous battle. Try again in a bit!").then(sentMessage => {
-        setTimeout(() => {
-            message.delete().catch(() => {});
-            sentMessage.delete().catch(() => {});
-        }, 3000);
-    });
-    return;
-}
-
-    let outcome = "";
-
-    if (mentionedUser) {
-        // User vs User
-        const [winner, loser] = Math.random() < 0.5
-            ? [message.author, mentionedUser]
-            : [mentionedUser, message.author];
-
-        const outcomeTemplate = userBattleOutcomes[Math.floor(Math.random() * userBattleOutcomes.length)];
-        outcome = outcomeTemplate
-            .replace('{winner}', `**${winner.username}**`)
-            .replace('{loser}', `**${loser.username}**`);
-
-        // Apply cooldown to both
-        battleCooldown.add(userId);
-        battleCooldown.add(targetId);
-        setTimeout(() => {
-            battleCooldown.delete(userId);
-            battleCooldown.delete(targetId);
-        }, 30000);
-    } else if (mentionedRole) {
-        // User vs Role
-        const didWin = Math.random() < 0.5;
-        const roleName = `**${mentionedRole.name}**`;
-        const winnerName = `**${message.author.username}**`;
-
-        if (didWin) {
-            const winTemplate = battleVsRoleWin[Math.floor(Math.random() * battleVsRoleWin.length)];
-            outcome = winTemplate
-                .replace('{winner}', winnerName)
-                .replace('{role}', roleName);
-        } else {
-            const loseTemplate = battleVsRoleLose[Math.floor(Math.random() * battleVsRoleLose.length)];
-            outcome = loseTemplate
-                .replace('{winner}', winnerName)
-                .replace('{role}', roleName);
+        if (!mentionedUser && !mentionedRole) {
+            const sent = await message.reply("⚔️ You need to mention a user or a role to battle! Usage: `!battle @username` or `!battle @role`");
+            setTimeout(() => {
+                message.delete().catch(() => {});
+                sent.delete().catch(() => {});
+            }, 3000);
+            return;
         }
 
-        // Apply cooldown to user and role ID
+        if (mentionedUser && mentionedUser.id === userId) {
+            const sent = await message.reply("🤨 You can't battle yourself. Try someone else.");
+            setTimeout(() => {
+                message.delete().catch(() => {});
+                sent.delete().catch(() => {});
+            }, 3000);
+            return;
+        }
+
+        const targetId = mentionedUser ? mentionedUser.id : mentionedRole.id;
+
+        if (battleCooldown.has(userId) || battleCooldown.has(targetId)) {
+            const sent = await message.reply("⏳ One of you is still recovering from a previous battle. Try again in a bit!");
+            setTimeout(() => {
+                message.delete().catch(() => {});
+                sent.delete().catch(() => {});
+            }, 3000);
+            return;
+        }
+
+        let outcome = "";
+
+        if (mentionedUser) {
+            // User vs User
+            const [winner, loser] = Math.random() < 0.5
+                ? [message.author, mentionedUser]
+                : [mentionedUser, message.author];
+
+            const outcomeTemplate = userBattleOutcomes[Math.floor(Math.random() * userBattleOutcomes.length)];
+            outcome = outcomeTemplate
+                .replace('{winner}', `**${winner.username}**`)
+                .replace('{loser}', `**${loser.username}**`);
+
+        } else if (mentionedRole) {
+            // User vs Role
+            const didWin = Math.random() < 0.5;
+            const roleName = `**${mentionedRole.name}**`;
+            const winnerName = `**${message.author.username}**`;
+
+            if (didWin) {
+                const winTemplate = battleVsRoleWin[Math.floor(Math.random() * battleVsRoleWin.length)];
+                outcome = winTemplate
+                    .replace('{winner}', winnerName)
+                    .replace('{role}', roleName);
+            } else {
+                const loseTemplate = battleVsRoleLose[Math.floor(Math.random() * battleVsRoleLose.length)];
+                outcome = loseTemplate
+                    .replace('{winner}', winnerName)
+                    .replace('{role}', roleName);
+            }
+        }
+
+        // Apply cooldowns
         battleCooldown.add(userId);
         battleCooldown.add(targetId);
         setTimeout(() => {
             battleCooldown.delete(userId);
             battleCooldown.delete(targetId);
         }, 30000);
+
+        message.channel.send(`⚔️ ${outcome}`);
     }
-
-    message.channel.send(`⚔️ ${outcome}`);
-}
 });
-
 
 client.login(process.env.TOKEN);
 

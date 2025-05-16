@@ -615,13 +615,28 @@ client.on('messageCreate', message => {
     if (message.content.startsWith('!8ball')) {
         const userId = message.author.id;
 
-        if (cooldown1.has(userId)) return;
+        if (cooldown1.has(userId)) {
+    message.reply("⏳ You're on cooldown! Please wait a few seconds.").then(sentMessage => {
+        setTimeout(() => {
+            message.delete().catch(() => {});
+            sentMessage.delete().catch(() => {});
+        }, 3000);
+    });
+    return;
+}
+
 
         const question = message.content.slice(6).trim();
         if (!question) {
             cooldown1.add(userId);
             setTimeout(() => cooldown1.delete(userId), 3000);
-            return message.reply("❓ You need to ask a question! Usage: `!8ball <your question>`");
+            message.reply("❓ You need to ask a question! Usage: `!8ball <your question>`").then(sentMessage => {
+    setTimeout(() => {
+        message.delete().catch(() => {});
+        sentMessage.delete().catch(() => {});
+    }, 3000);
+});
+
         }
 
         const response = eightBallResponses[Math.floor(Math.random() * eightBallResponses.length)];
@@ -649,8 +664,14 @@ client.on('messageCreate', message => {
     const targetId = mentionedUser ? mentionedUser.id : mentionedRole.id;
 
     if (battleCooldown.has(userId) || battleCooldown.has(targetId)) {
-        return message.reply("⏳ One of you is still recovering from a previous battle. Try again in a bit!");
-    }
+    message.reply("⏳ One of you is still recovering from a previous battle. Try again in a bit!").then(sentMessage => {
+        setTimeout(() => {
+            message.delete().catch(() => {});
+            sentMessage.delete().catch(() => {});
+        }, 3000);
+    });
+    return;
+}
 
     let outcome = "";
 

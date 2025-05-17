@@ -524,10 +524,6 @@ client.on("messageCreate", async (message) => {
         const now = Date.now();
         const cooldown = 30 * 1000;
 
-        if (userId === '529223367077658655') {
-            return;
-        }
-
         if (cooldowns.has(userId) && now - cooldowns.get(userId) < cooldown) {
             return;
         }

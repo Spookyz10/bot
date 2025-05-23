@@ -111,6 +111,26 @@ client.once('ready', async () => {
         option.setName('item-level').setDescription('Item level').setRequired(true)),
 
     new SlashCommandBuilder()
+      .setName('calc-runeXP')
+      .setDescription('Calculates dungeon runs needed to max a rune')
+      .addNumberOption(option =>
+        option.setName('rune-level').setDescription('Your runes current level').setRequired(true))
+      .addNumberOption(option =>
+        option.setName('goal-level').setDescription('Your runes goal level').setRequired(true))
+      .addStringOption(option =>
+        option.setName('modifier').setDescription('Modifier').setRequired(true)
+          .addChoices(
+            { name: 'None', value: '25' },
+            { name: 'Nightmare', value: '33' },
+            { name: 'Chaotic', value: '50' },
+            { name: 'Impossible', value: '66' }
+          ))
+      .addNumberOption(option =>
+        option.setName('curr-xp').setDescription('Current rune XP').setRequired(false))
+      .addNumberOption(option =>
+        option.setName('time-per-run').setDescription('Time per run IN SECONDS').setRequired(false)),
+        
+    new SlashCommandBuilder()
       .setName('calc-skilldmg')
       .setDescription('Calculates skill damage')
       .addNumberOption(option =>
@@ -412,6 +432,60 @@ if (commandName === 'calc-floor') {
     .setTimestamp();
 
   await interaction.reply({ content: `Hey <@${interaction.user.id}>! Make sure you put your stats based on the player card!`, embeds: [embed] });
+}
+
+if (commandName === 'calc-runeXP') {
+  const currentLevel = interaction.options.getNumber('rune-level');
+    const goalLevel = interaction.options.getNumber('goal-level');
+    const currXP = interaction.options.getNumber('curr-xp') || 0; 
+    const time = interaction.options.getNumber('time-per-run'); 
+
+    const modifierValue = interaction.options.getString('modifier') || '0';
+    const modifierMap = {
+      "25": "No",
+      "33": "Nightmare",
+      "50": "Chaotic",
+      "66": "Impossible"
+    };
+    const modifierName = modifierMap[modifierValue];
+   
+  const XPNeeded = (goalLevel - currentLevel) * 100 - currXP
+  
+  const runsNeeded =  Math.ceil(XPNeeded / parseFloat(modifierValue))
+  
+  if (time !== null) { 
+          let totalTime = runsNeeded * (time + 15);
+          let hours = Math.floor(totalTime / 3600);
+          let minutes = Math.floor((totalTime % 3600) / 60);
+          let seconds = totalTime % 60;
+
+          let timeText = '';
+          if (hours > 0) timeText += `${hours} hour${hours > 1 ? 's' : ''}`;
+          if (minutes > 0) timeText += `${timeText ? ' & ' : ''}${minutes} minute${minutes > 1 ? 's' : ''}`;
+          if (seconds > 0 && timeText === '') timeText += `${seconds} second${seconds > 1 ? 's' : ''}`;
+          
+          let fieldValue = `\n\n**Time Needed:**\n${timeText}`;
+        
+      }
+
+if (goalLevel <= currentLevel) {
+  return interaction.reply({ content: "Goal level must be higher than current level.", ephemeral: true });
+}
+
+  const embed = new EmbedBuilder()
+    .setColor('Purple')
+    .setTitle('🔮 Rune XP Calculator 🔮')
+    .setDescription(`To go from ${goalLevel} from ${currentLevel} with ${modifierName} Modifier you need to complete ${runsNeeded} runs!`)
+    .setImage('https://static.wikia.nocookie.net/crusadersroblox/images/2/2b/Boss_Rush.png/revision/latest?cb=20250312123000')
+    .setThumbnail('https://static.wikia.nocookie.net/crusadersroblox/images/1/17/Bot.png')
+    .addFields({
+        name: `Name test`,
+        value: fieldValue,
+        inline: true
+      });
+    .setTimestamp();
+
+  await interaction.reply({ content: `Hey <@${interaction.user.id}>!`, embeds: [embed] });
 }
   
 if (commandName === 'calc-runs') {
